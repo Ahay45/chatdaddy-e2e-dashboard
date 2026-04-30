@@ -13,7 +13,9 @@
     "e2e:headless": "node e2e/runner.mjs --headless",
     "e2e:save-auth": "node e2e/runner.mjs --save-auth",
     "e2e:inbox": "node e2e/inbox.mjs",
-    "e2e:inbox:headless": "node e2e/inbox.mjs --headless"
+    "e2e:inbox:headless": "node e2e/inbox.mjs --headless",
+    "e2e:flows": "node e2e/flows.mjs",
+    "e2e:flows:headless": "node e2e/flows.mjs --headless"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

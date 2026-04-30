@@ -343,14 +343,14 @@ export default function App() {
     } catch { /* ignore */ }
   }, [testRunning])
 
-  const triggerRun = async (suite: 'all' | 'inbox') => {
+  const triggerRun = async (suite: 'all' | 'inbox' | 'flows') => {
     if (testRunning) return
     try {
-      const url = suite === 'inbox' ? `${API}/api/run/inbox` : `${API}/api/run`
+      const url = suite === 'inbox' ? `${API}/api/run/inbox` : suite === 'flows' ? `${API}/api/run/flows` : `${API}/api/run`
       await fetch(url, { method: 'POST' })
       setTestRunning(true)
     } catch {
-      alert('Could not reach local test server. Make sure you ran: npm run dev')
+      alert('Could not reach local test server. Make sure you ran: npm run dev:full')
     }
   }
 
@@ -445,6 +445,22 @@ export default function App() {
                   }}
                 >
                   Inbox Tests
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={testRunning}
+                  onClick={() => triggerRun('flows')}
+                  startIcon={<Play size={13} />}
+                  sx={{
+                    fontSize: '0.6875rem', fontWeight: 700, textTransform: 'none',
+                    borderColor: alpha('#A855F7', 0.5), color: '#A855F7',
+                    '&:hover': { borderColor: '#A855F7', bgcolor: alpha('#A855F7', 0.08) },
+                    '&:disabled': { borderColor: alpha('#A855F7', 0.2), color: alpha('#A855F7', 0.3) },
+                    borderRadius: '8px', py: 0.5, px: 1.5, minWidth: 0,
+                  }}
+                >
+                  User Flows
                 </Button>
               </>
             )}

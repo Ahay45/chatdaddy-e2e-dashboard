@@ -130,6 +130,13 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  if (req.method === 'POST' && req.url === '/api/run/flows') {
+    const started = runSuite('flows.mjs')
+    res.writeHead(started ? 200 : 409, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ ok: started, message: started ? 'Flow tests started' : 'Already running' }))
+    return
+  }
+
   res.writeHead(404)
   res.end('Not found')
 })
