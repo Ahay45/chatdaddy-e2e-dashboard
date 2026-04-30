@@ -215,7 +215,12 @@ function SuiteCard({ suite }: { suite: Suite }) {
       >
         <Typography sx={{ fontSize: '1.125rem', flexShrink: 0 }}>{suite.icon}</Typography>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', mb: 0.5 }}>{suite.name}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>{suite.name}</Typography>
+            <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, color: alpha('#fff', 0.25), bgcolor: alpha('#fff', 0.06), px: 0.75, py: 0.2, borderRadius: '5px', flexShrink: 0 }}>
+              {s.total} step{s.total !== 1 ? 's' : ''}
+            </Typography>
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <LinearProgress variant="determinate" value={pct}
               sx={{ flex: 1, height: 5, borderRadius: 3, bgcolor: alpha('#fff', 0.06),
