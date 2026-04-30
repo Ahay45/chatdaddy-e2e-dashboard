@@ -1,15 +1,22 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   Box, Typography, Chip, LinearProgress, IconButton,
-  Tooltip, alpha, ThemeProvider, createTheme, CssBaseline, Collapse,
+  Tooltip, alpha, ThemeProvider, createTheme, CssBaseline, Collapse, Button,
 } from '@mui/material'
 import {
   CheckCircle2, XCircle, SkipForward, RefreshCw, Clock,
   Globe, FlaskConical, Terminal, AlertTriangle, ChevronDown,
-  ChevronUp, Camera, TrendingUp, Activity, Zap, Info,
+  ChevronUp, Camera, TrendingUp, Activity, Zap, Info, Play, Loader,
 } from 'lucide-react'
 
+const API = 'http://localhost:3101'
+
 // ─── Theme ────────────────────────────────────────────────────────────────────
+
+// inject spin keyframes once
+const style = document.createElement('style')
+style.textContent = '@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }'
+document.head.appendChild(style)
 
 const theme = createTheme({
   palette: {
@@ -266,8 +273,10 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(Date.now())
   const [filter, setFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
+  const [testRunning, setTestRunning] = useState(false)
+  const [serverOnline, setServerOnline] = useState(false)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const r = await fetch(import.meta.env.BASE_URL + 'e2e-results.json?t=' + Date.now())
@@ -278,9 +287,40 @@ export default function App() {
       setLoading(false)
       setLastRefresh(Date.now())
     }
+  }, [])
+
+  const pollStatus = useCallback(async () => {
+    try {
+      const r = await fetch(`${API}/api/status`, { signal: AbortSignal.timeout(1500) })
+      const json = await r.json()
+      setServerOnline(true)
+      const wasRunning = testRunning
+      setTestRunning(json.running)
+      if (wasRunning && !json.running) load() // refresh results when run completes
+    } catch {
+      setServerOnline(false)
+      setTestRunning(false)
+    }
+  }, [testRunning, load])
+
+  const triggerRun = async (suite: 'all' | 'inbox') => {
+    if (testRunning) return
+    try {
+      const url = suite === 'inbox' ? `${API}/api/run/inbox` : `${API}/api/run`
+      await fetch(url, { method: 'POST' })
+      setTestRunning(true)
+    } catch {
+      alert('Could not reach local test server. Make sure you ran: npm run dev')
+    }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    pollStatus()
+    const id = setInterval(pollStatus, 3000)
+    return () => clearInterval(id)
+  }, [pollStatus])
 
   const s = data?.summary ?? { passed: 0, failed: 0, skipped: 0, total: 0 }
   const hasRun = !!data?.runAt && s.total > 0
@@ -323,7 +363,44 @@ export default function App() {
               </Typography>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}>
+            {/* Run buttons — only shown when local server is reachable */}
+            {serverOnline && (
+              <>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={testRunning}
+                  onClick={() => triggerRun('all')}
+                  startIcon={testRunning ? <Loader size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={13} />}
+                  sx={{
+                    fontSize: '0.6875rem', fontWeight: 700, textTransform: 'none',
+                    bgcolor: testRunning ? alpha('#0F5BFF', 0.4) : '#0F5BFF',
+                    '&:hover': { bgcolor: '#1a68ff' },
+                    '&:disabled': { bgcolor: alpha('#0F5BFF', 0.35), color: alpha('#fff', 0.5) },
+                    borderRadius: '8px', py: 0.5, px: 1.5, minWidth: 0,
+                  }}
+                >
+                  {testRunning ? 'Running…' : 'Run All Tests'}
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={testRunning}
+                  onClick={() => triggerRun('inbox')}
+                  startIcon={<Play size={13} />}
+                  sx={{
+                    fontSize: '0.6875rem', fontWeight: 700, textTransform: 'none',
+                    borderColor: alpha('#10B981', 0.5), color: '#10B981',
+                    '&:hover': { borderColor: '#10B981', bgcolor: alpha('#10B981', 0.08) },
+                    '&:disabled': { borderColor: alpha('#10B981', 0.2), color: alpha('#10B981', 0.3) },
+                    borderRadius: '8px', py: 0.5, px: 1.5, minWidth: 0,
+                  }}
+                >
+                  Inbox Tests
+                </Button>
+              </>
+            )}
             {data?.mode && (
               <Chip label={data.mode} size="small"
                 sx={{ height: 20, fontSize: '0.5625rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.12), color: '#9CA3AF', borderRadius: '6px' }} />
