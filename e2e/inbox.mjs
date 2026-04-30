@@ -83,8 +83,8 @@ function suite(name, icon) {
   log(`\n${'━'.repeat(60)}\n  ${icon}  ${name}\n${'━'.repeat(60)}`)
 }
 
-function step(name) {
-  activeStep = { name, status: 'running', findings: [], errors: [], duration: 0, _t: Date.now() }
+function step(name, userSteps = []) {
+  activeStep = { name, status: 'running', findings: [], errors: [], userSteps, duration: 0, _t: Date.now() }
   activeSuite.steps.push(activeStep)
   log(`\n  ▸ ${name}`)
 }
@@ -95,8 +95,10 @@ function pass(m='') { activeStep.status='pass'; activeStep.duration=Date.now()-a
 function fail(m)    { activeStep.status='fail'; activeStep.duration=Date.now()-activeStep._t; activeStep.errors.push(m); log(`    → FAIL: ${m}`) }
 function skip(m='') { activeStep.status='skip'; activeStep.duration=0; if(m) activeStep.findings.push(m); log(`    → SKIP: ${m}`) }
 
-async function run(name, fn) {
-  step(name)
+async function run(name, userSteps, fn) {
+  // allow calling without userSteps: run(name, fn)
+  if (typeof userSteps === 'function') { fn = userSteps; userSteps = [] }
+  step(name, userSteps)
   try { await fn(); if (activeStep.status === 'running') pass() }
   catch (e) { fail(e.message) }
 }
@@ -148,8 +150,8 @@ function saveAndPush() {
         skipped: s.steps.filter(st => st.status==='skip').length,
         total:   s.steps.length,
       },
-      steps: s.steps.map(({ name, status, duration, findings, errors }) =>
-        ({ name, status, duration, findings, errors, screenshot: null })
+      steps: s.steps.map(({ name, status, duration, findings, errors, userSteps }) =>
+        ({ name, status, duration, findings, errors, userSteps: userSteps ?? [], screenshot: null })
       ),
     })),
   }
@@ -167,8 +169,8 @@ function saveAndPush() {
         name: '📬 Inbox Module', icon: '📬',
         durationMs: totalMs,
         summary: data.summary,
-        steps: allSteps.map(({ name, status, duration, findings, errors }) =>
-          ({ name, status, duration, findings, errors, screenshot: null })
+        steps: allSteps.map(({ name, status, duration, findings, errors, userSteps }) =>
+          ({ name, status, duration, findings, errors, userSteps: userSteps ?? [], screenshot: null })
         ),
       })
       const all = main.suites.flatMap(s => s.steps ?? [])
@@ -206,7 +208,7 @@ await wait(4000)
 suite('Inbox Load & Layout', '🏠')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Inbox page loads without crash', async () => {
+await run('Inbox page loads without crash', ['Open browser → Go to /inbox URL'], async () => {
   const url  = getUrl()
   const text = getText()
   find(`URL: ${url}`)
@@ -216,7 +218,7 @@ await run('Inbox page loads without crash', async () => {
   pass()
 })
 
-await run('Sidebar navigation visible', async () => {
+await run('Sidebar navigation visible', ['Look at the left sidebar → Confirm Inbox, Contacts, Channels links are shown'], async () => {
   const text = getText()
   const navItems = ['inbox', 'contacts', 'channels', 'calls', 'automation', 'marketing']
   const found = navItems.filter(n => text.includes(n))
@@ -225,7 +227,7 @@ await run('Sidebar navigation visible', async () => {
   pass()
 })
 
-await run('Conversation list renders', async () => {
+await run('Conversation list renders', ['Open Inbox → Verify chat list appears with conversation rows'], async () => {
   const refs = getRefs()
   const assignBtns = Object.values(refs).filter(r => (r.name || '').toLowerCase() === 'assign').length
   find(`Conversation rows (Assign buttons): ${assignBtns}`)
@@ -233,7 +235,7 @@ await run('Conversation list renders', async () => {
   pass()
 })
 
-await run('Search bar present', async () => {
+await run('Search bar present', ['Look at top of inbox → Find the search input field'], async () => {
   const refs = getRefs()
   const searchRef = findRef(refs, 'search all conversations', 'search')
   find(`Search ref: ${searchRef ?? 'not found'}`)
@@ -241,7 +243,7 @@ await run('Search bar present', async () => {
   pass()
 })
 
-await run('Inbox top-bar controls visible', async () => {
+await run('Inbox top-bar controls visible', ['Open Inbox → Check top bar for sort, filter, and control buttons'], async () => {
   const refs = getRefs()
   const all  = Object.entries(refs)
   find(`Total interactive elements: ${all.length}`)
@@ -256,7 +258,7 @@ suite('Filter Tabs', '🗂️')
 // ─────────────────────────────────────────────────────────────────────────────
 
 for (const tab of ['Unread', 'Assigned to Me', 'Unassigned', 'Individuals', 'Groups', 'Archived']) {
-  await run(`Tab: "${tab}"`, async () => {
+  await run(`Tab: "${tab}"`, [`Open Inbox → Click the "${tab}" tab at the top → Verify list updates`], async () => {
     ab('open', `${BASE_URL}/inbox`)
     await wait(3000)
     const refs   = getRefs()
@@ -276,7 +278,7 @@ for (const tab of ['Unread', 'Assigned to Me', 'Unassigned', 'Individuals', 'Gro
 suite('Search', '🔍')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Search bar focusable', async () => {
+await run('Search bar focusable', ['Open Inbox → Click on the search bar at the top'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   const refs = getRefs()
@@ -288,7 +290,7 @@ await run('Search bar focusable', async () => {
   pass()
 })
 
-await run('Type query — list updates without crash', async () => {
+await run('Type query — list updates without crash', ['Click search bar → Type a keyword → Verify conversation list filters in real-time'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'search all conversations', 'search')
   if (!ref) throw new Error('Search input not found')
@@ -300,7 +302,7 @@ await run('Type query — list updates without crash', async () => {
   pass()
 })
 
-await run('Clear search restores full list', async () => {
+await run('Clear search restores full list', ['Type in search bar → Press Escape or clear the text → Verify full list returns'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'search all conversations', 'search')
   if (ref) { ab('fill', ref, ''); await wait(1000) }
@@ -314,7 +316,7 @@ await run('Clear search restores full list', async () => {
 suite('Inbox Controls', '🎚️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Team inbox switcher', async () => {
+await run('Team inbox switcher', ['Open Inbox → Click team/inbox switcher at top left → Select a different inbox or team'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   const refs = getRefs()
@@ -330,7 +332,7 @@ await run('Team inbox switcher', async () => {
   pass()
 })
 
-await run('Sort order (newest / oldest)', async () => {
+await run('Sort order (newest / oldest)', ['Open Inbox → Click sort icon → Choose "Newest" or "Oldest" → Verify list reorders'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'sort', 'newest', 'oldest', 'order')
   if (!ref) { warn('Sort control not found'); pass('Not visible'); return }
@@ -348,7 +350,7 @@ await run('Sort order (newest / oldest)', async () => {
   pass()
 })
 
-await run('Channel filter (WhatsApp / Facebook / etc.)', async () => {
+await run('Channel filter (WhatsApp / Facebook / etc.)', ['Open Inbox → Click channel filter dropdown → Select WhatsApp or Facebook → List filters by channel'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'channel filter', 'all channels', 'whatsapp', 'filter by channel')
   if (!ref) { warn('Channel filter not found'); pass('Not visible'); return }
@@ -366,7 +368,7 @@ await run('Channel filter (WhatsApp / Facebook / etc.)', async () => {
 suite('Filter Panel', '🎛️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Open filter panel', async () => {
+await run('Open filter panel', ['Open Inbox → Click the filter/funnel icon → Filter panel slides open'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   const refs = getRefs()
@@ -380,7 +382,7 @@ await run('Open filter panel', async () => {
   pass()
 })
 
-await run('Assignee filter', async () => {
+await run('Assignee filter', ['Open filter panel → Click "Assignee" dropdown → Pick an agent → List filters to that agent\'s chats'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'assignee')
   if (!ref) { warn('Assignee filter not found'); pass('Not in view'); return }
@@ -392,7 +394,7 @@ await run('Assignee filter', async () => {
   pass()
 })
 
-await run('Tags filter', async () => {
+await run('Tags filter', ['Open filter panel → Click "Tags" field → Select a tag → List shows only tagged conversations'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'tags', 'tag')
   if (!ref) { warn('Tags filter not found'); pass('Not in view'); return }
@@ -404,7 +406,7 @@ await run('Tags filter', async () => {
   pass()
 })
 
-await run('Date range filter', async () => {
+await run('Date range filter', ['Open filter panel → Click "Date range" → Pick start and end date → List filters by date'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'date range', 'date')
   if (!ref) { warn('Date range filter not found'); pass('Not in view'); return }
@@ -420,7 +422,7 @@ await run('Date range filter', async () => {
 suite('Conversation Row Actions', '💬')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Open first conversation', async () => {
+await run('Open first conversation', ['See conversation list → Click any chat row → Conversation opens on the right'], async () => {
   const opened = await openFirstConversation()
   if (!opened) throw new Error('Could not find any conversation to open')
   const url  = getUrl()
@@ -430,7 +432,7 @@ await run('Open first conversation', async () => {
   pass()
 })
 
-await run('Assign button opens agent picker', async () => {
+await run('Assign button opens agent picker', ['Hover over a conversation row → Click "Assign" button → Agent picker dropdown opens → Select an agent'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs     = getRefs()
@@ -446,7 +448,7 @@ await run('Assign button opens agent picker', async () => {
   pass()
 })
 
-await run('More (⋯) menu shows actions', async () => {
+await run('More (⋯) menu shows actions', ['Hover over a conversation row → Click ⋯ (More) icon → Menu shows Archive, Resolve, Snooze, Delete options'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs    = getRefs()
@@ -463,7 +465,7 @@ await run('More (⋯) menu shows actions', async () => {
   pass()
 })
 
-await run('Bulk select toggle', async () => {
+await run('Bulk select toggle', ['Open Inbox → Click bulk select icon → Checkboxes appear on each conversation row → Select multiple'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs    = getRefs()
@@ -481,7 +483,7 @@ await run('Bulk select toggle', async () => {
 suite('Message View', '📨')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Message thread renders inside conversation', async () => {
+await run('Message thread renders inside conversation', ['Click a conversation → Message bubbles load in the center panel'], async () => {
   await openFirstConversation()
   const refs = getRefs()
   const text = getText()
@@ -494,7 +496,7 @@ await run('Message thread renders inside conversation', async () => {
   pass()
 })
 
-await run('Contact name / header visible', async () => {
+await run('Contact name / header visible', ['Open conversation → See contact name and Resolve button in the top header'], async () => {
   const text = getText()
   const refs = getRefs()
   // Header area usually has resolve, assign, contact name
@@ -504,7 +506,7 @@ await run('Contact name / header visible', async () => {
   pass()
 })
 
-await run('Message timestamps visible', async () => {
+await run('Message timestamps visible', ['Open a conversation → Each message bubble shows the time it was sent (e.g. 10:30 am)'], async () => {
   const text = getText()
   // Timestamps appear as "am", "pm", or time-like patterns
   const hasTime = text.match(/\d+:\d+/) || text.includes(' am') || text.includes(' pm')
@@ -517,7 +519,7 @@ await run('Message timestamps visible', async () => {
 suite('Compose & Send', '✍️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Compose box is focusable', async () => {
+await run('Compose box is focusable', ['Open conversation → Click the text area at the bottom → Cursor appears, ready to type'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'type a message', 'message', 'compose', 'write a message', 'reply')
   if (!ref) { warn('Compose box not found'); pass('Not visible'); return }
@@ -527,7 +529,7 @@ await run('Compose box is focusable', async () => {
   pass()
 })
 
-await run('Type text in compose', async () => {
+await run('Type text in compose', ['Click compose box → Type a message → Text appears in the input without crash'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'type a message', 'message', 'compose', 'write a message', 'reply')
   if (!ref) { warn('Compose box not found'); pass('Not visible'); return }
@@ -539,7 +541,7 @@ await run('Type text in compose', async () => {
   pass()
 })
 
-await run('Send button visible and clickable', async () => {
+await run('Send button visible and clickable', ['Type a message → Click the Send (➤) button → Message is sent to the conversation'], async () => {
   const refs = getRefs()
   const sendRef = findRef(refs, 'send', 'send message')
   if (!sendRef) { warn('Send button not found'); pass('Not visible'); return }
@@ -550,7 +552,7 @@ await run('Send button visible and clickable', async () => {
   pass()
 })
 
-await run('Rich text toolbar (bold / italic / underline)', async () => {
+await run('Rich text toolbar (bold / italic / underline)', ['Click compose box → See formatting toolbar → Click Bold (B) / Italic (I) / Underline (U) buttons → Text style changes'], async () => {
   const refs = getRefs()
   const boldRef      = findRef(refs, 'bold')
   const italicRef    = findRef(refs, 'italic')
@@ -569,7 +571,7 @@ await run('Rich text toolbar (bold / italic / underline)', async () => {
   pass()
 })
 
-await run('Emoji picker opens', async () => {
+await run('Emoji picker opens', ['Click the 😀 emoji icon in compose toolbar → Emoji picker grid opens → Click an emoji to insert it'], async () => {
   const refs    = getRefs()
   const emojiRef = findRef(refs, 'emoji', 'emoji picker', '😀', 'emoticon')
   if (!emojiRef) { warn('Emoji picker button not found'); pass('Not visible'); return }
@@ -582,7 +584,7 @@ await run('Emoji picker opens', async () => {
   pass()
 })
 
-await run('Attachment button (image / file upload)', async () => {
+await run('Attachment button (image / file upload)', ['Click paperclip/attachment icon → File chooser or media panel opens → Select an image or file to attach'], async () => {
   const refs  = getRefs()
   const attRef = findRef(refs, 'attach', 'attachment', 'upload', 'file', 'paperclip', 'image')
   if (!attRef) { warn('Attach button not found'); pass('Not visible'); return }
@@ -595,7 +597,7 @@ await run('Attachment button (image / file upload)', async () => {
   pass()
 })
 
-await run('Template / quick reply picker', async () => {
+await run('Template / quick reply picker', ['Click template icon or type / in compose → Template list opens → Select a template to fill compose box'], async () => {
   const refs = getRefs()
   const tRef = findRef(refs, 'template', 'quick reply', 'canned response', '/')
   if (!tRef) { warn('Template picker not found'); pass('Not visible'); return }
@@ -608,7 +610,7 @@ await run('Template / quick reply picker', async () => {
   pass()
 })
 
-await run('AI reply suggestion button', async () => {
+await run('AI reply suggestion button', ['Open conversation → Click AI/Copilot button → AI generates a reply suggestion → Review and send or edit'], async () => {
   const refs = getRefs()
   const aiRef = findRef(refs, 'ai', 'suggest', 'ai reply', 'copilot', 'generate reply')
   if (!aiRef) { warn('AI reply button not found'); pass('Not visible'); return }
@@ -621,7 +623,7 @@ await run('AI reply suggestion button', async () => {
   pass()
 })
 
-await run('Private / internal note toggle', async () => {
+await run('Private / internal note toggle', ['Open conversation → Click "Note" tab or toggle → Compose turns yellow/note mode → Type internal note → Send (visible only to agents)'], async () => {
   const refs = getRefs()
   const noteRef = findRef(refs, 'note', 'internal note', 'private note', 'add note')
   if (!noteRef) { warn('Internal note button not found'); pass('Not visible'); return }
@@ -637,7 +639,7 @@ await run('Private / internal note toggle', async () => {
   pass()
 })
 
-await run('Scheduled send button', async () => {
+await run('Scheduled send button', ['Type a message → Click clock/schedule icon → Pick a date and time → Message will be sent at that time'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'schedule', 'scheduled send', 'send later', 'clock')
   if (!ref) { warn('Scheduled send button not found'); pass('Not visible'); return }
@@ -650,7 +652,7 @@ await run('Scheduled send button', async () => {
   pass()
 })
 
-await run('Channel selector (multi-channel)', async () => {
+await run('Channel selector (multi-channel)', ['Open conversation → Click channel icon in compose → Select which channel (WhatsApp/Facebook) to send reply from'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'channel', 'send via', 'switch channel', 'whatsapp', 'channel selector')
   if (!ref) { warn('Channel selector not found'); pass('Not visible'); return }
@@ -666,7 +668,7 @@ await run('Channel selector (multi-channel)', async () => {
 suite('Message Actions', '⚙️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Hover over message reveals action bar', async () => {
+await run('Hover over message reveals action bar', ['Hover mouse over a message bubble → Action bar appears with React, Reply, Copy, Delete icons'], async () => {
   // We look for message-level actions (reply, react, copy, delete)
   const refs = getRefs()
   const reactRef  = findRef(refs, 'react', 'reaction', 'emoji react')
@@ -679,7 +681,7 @@ await run('Hover over message reveals action bar', async () => {
   pass()
 })
 
-await run('Emoji reaction on message', async () => {
+await run('Emoji reaction on message', ['Hover over a message → Click 😊 react icon → Emoji picker opens → Click emoji → Reaction appears under message'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'react', 'reaction', 'emoji react')
   if (!ref) { warn('React button not found'); pass('Not visible'); return }
@@ -691,7 +693,7 @@ await run('Emoji reaction on message', async () => {
   pass()
 })
 
-await run('Quote reply (reply to specific message)', async () => {
+await run('Quote reply (reply to specific message)', ['Hover over a message → Click Reply icon → Message is quoted in compose box → Type reply and send'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'reply to', 'quote reply', 'reply message')
   if (!ref) { warn('Quote reply not found'); pass('Not visible'); return }
@@ -702,7 +704,7 @@ await run('Quote reply (reply to specific message)', async () => {
   pass()
 })
 
-await run('Copy message text', async () => {
+await run('Copy message text', ['Hover over a message → Click Copy icon → Message text is copied to clipboard'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'copy message', 'copy text', 'copy')
   if (!ref) { warn('Copy button not found'); pass('Not visible'); return }
@@ -713,7 +715,7 @@ await run('Copy message text', async () => {
   pass()
 })
 
-await run('Delete / unsend message', async () => {
+await run('Delete / unsend message', ['Hover over a message → Click Delete/Unsend → Confirm dialog → Message removed from conversation'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'delete message', 'unsend', 'delete')
   if (!ref) { warn('Delete message not found'); pass('Not visible'); return }
@@ -726,7 +728,7 @@ await run('Delete / unsend message', async () => {
 suite('Conversation Management', '🗂️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Resolve conversation button', async () => {
+await run('Resolve conversation button', ['Open conversation → Click "Resolve" button in header → Conversation marked as resolved → Moves out of open inbox'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'resolve', 'close conversation', 'mark resolved', 'done')
   if (!ref) { warn('Resolve button not found'); pass('Not visible'); return }
@@ -734,7 +736,7 @@ await run('Resolve conversation button', async () => {
   pass()
 })
 
-await run('Assign to team member (from inside conversation)', async () => {
+await run('Assign to team member (from inside conversation)', ['Open conversation → Click "Assign" in header → Pick a team member → Conversation is assigned to them'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'assign', 'assignee', 'assign to')
   if (!ref) { warn('Assign button not found inside conversation'); pass('Not visible'); return }
@@ -749,7 +751,7 @@ await run('Assign to team member (from inside conversation)', async () => {
   pass()
 })
 
-await run('Snooze conversation', async () => {
+await run('Snooze conversation', ['Open conversation → Click ⏰ Snooze → Pick time (1 hour / tomorrow / custom) → Conversation hides until then'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'snooze')
   if (!ref) { warn('Snooze button not found'); pass('Not visible'); return }
@@ -764,7 +766,7 @@ await run('Snooze conversation', async () => {
   pass()
 })
 
-await run('Pin conversation', async () => {
+await run('Pin conversation', ['Open conversation → Click ⋯ More menu → Click "Pin" → Conversation pinned to top of inbox'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'pin', 'pin conversation')
   if (!ref) { warn('Pin button not found'); pass('Not visible'); return }
@@ -772,7 +774,7 @@ await run('Pin conversation', async () => {
   pass()
 })
 
-await run('Mute conversation', async () => {
+await run('Mute conversation', ['Open conversation → Click ⋯ More menu → Click "Mute" → No notifications from this chat'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'mute', 'mute conversation')
   if (!ref) { warn('Mute button not found'); pass('Not visible'); return }
@@ -780,7 +782,7 @@ await run('Mute conversation', async () => {
   pass()
 })
 
-await run('Archive conversation', async () => {
+await run('Archive conversation', ['Open conversation → Click ⋯ More menu → Click "Archive" → Conversation moves to Archived tab'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'archive', 'archive conversation')
   if (!ref) { warn('Archive button not found'); pass('Not visible'); return }
@@ -788,7 +790,7 @@ await run('Archive conversation', async () => {
   pass()
 })
 
-await run('Mark as unread', async () => {
+await run('Mark as unread', ['Open a conversation → Click ⋯ More menu → Click "Mark as unread" → Bold dot appears on conversation in list'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'mark as unread', 'unread', 'mark unread')
   if (!ref) { warn('Mark as unread not found'); pass('Not visible'); return }
@@ -796,7 +798,7 @@ await run('Mark as unread', async () => {
   pass()
 })
 
-await run('Delete conversation', async () => {
+await run('Delete conversation', ['Open conversation → Click ⋯ More menu → Click "Delete" → Confirm → Chat is permanently removed'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'delete conversation', 'delete chat')
   if (!ref) { warn('Delete conversation not found'); pass('Not visible'); return }
@@ -804,7 +806,7 @@ await run('Delete conversation', async () => {
   pass()
 })
 
-await run('Add label / tag to conversation', async () => {
+await run('Add label / tag to conversation', ['Open conversation → Click label/tag icon → Pick a label from list → Label appears on conversation'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'label', 'tag', 'add label', 'add tag')
   if (!ref) { warn('Label/tag button not found'); pass('Not visible'); return }
@@ -820,7 +822,7 @@ await run('Add label / tag to conversation', async () => {
 suite('Contact Panel (Right Sidebar)', '👤')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Contact panel visible or togglable', async () => {
+await run('Contact panel visible or togglable', ['Open conversation → Click contact/profile icon on right → Contact info panel slides in on the right side'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'contact info', 'contact panel', 'view contact', 'contact details', 'profile')
   if (!ref) { warn('Contact panel toggle not found'); pass('May be auto-visible'); return }
@@ -831,7 +833,7 @@ await run('Contact panel visible or togglable', async () => {
   pass()
 })
 
-await run('Contact name and phone visible in panel', async () => {
+await run('Contact name and phone visible in panel', ['Open contact panel → See contact\'s name and phone number displayed'], async () => {
   const text = getText()
   const hasPhone = text.match(/\+?\d[\d\s\-()]{6,}/)
   const hasName  = text.includes('name') || text.includes('contact')
@@ -841,7 +843,7 @@ await run('Contact name and phone visible in panel', async () => {
   pass()
 })
 
-await run('Edit contact details', async () => {
+await run('Edit contact details', ['Open contact panel → Click Edit (pencil icon) → Update name or phone → Save → Details updated'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'edit contact', 'edit', 'edit name', 'edit phone')
   if (!ref) { warn('Edit contact button not found'); pass('Not visible'); return }
@@ -853,7 +855,7 @@ await run('Edit contact details', async () => {
   pass()
 })
 
-await run('Add custom attribute / field', async () => {
+await run('Add custom attribute / field', ['Open contact panel → Scroll to custom fields section → Click "+ Add" → Fill field name and value → Save'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'custom attribute', 'add attribute', 'custom field', 'add field')
   if (!ref) { warn('Custom attribute not found'); pass('Not visible'); return }
@@ -865,7 +867,7 @@ await run('Add custom attribute / field', async () => {
   pass()
 })
 
-await run('Add / edit tags on contact', async () => {
+await run('Add / edit tags on contact', ['Open contact panel → Find Tags field → Click to add tag → Type or select tag → Tag added to contact'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'add tag', 'contact tag', 'tags')
   if (!ref) { warn('Contact tags field not found'); pass('Not visible'); return }
@@ -877,7 +879,7 @@ await run('Add / edit tags on contact', async () => {
   pass()
 })
 
-await run('View conversation history list', async () => {
+await run('View conversation history list', ['Open contact panel → Scroll to "Previous Conversations" section → See list of past chats with this contact'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'conversation history', 'history', 'previous conversations', 'past chats')
   if (!ref) { warn('Conversation history not found'); pass('Not visible'); return }
@@ -888,7 +890,7 @@ await run('View conversation history list', async () => {
   pass()
 })
 
-await run('CRM / notes section in contact panel', async () => {
+await run('CRM / notes section in contact panel', ['Open contact panel → Find Notes/CRM section → Click "Add note" → Type note → Save → Note appears in panel'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'crm', 'notes', 'add note', 'contact note')
   if (!ref) { warn('CRM/notes section not found in panel'); pass('Not visible'); return }
@@ -904,7 +906,7 @@ await run('CRM / notes section in contact panel', async () => {
 suite('Sidebar & Navigation', '◀️')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Sidebar collapse / expand', async () => {
+await run('Sidebar collapse / expand', ['Click the arrow/toggle icon at the edge of the sidebar → Sidebar collapses to icons only → Click again to expand'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs = getRefs()
@@ -920,7 +922,7 @@ await run('Sidebar collapse / expand', async () => {
   pass()
 })
 
-await run('Notifications bell', async () => {
+await run('Notifications bell', ['Click the 🔔 bell icon in the top bar → Notification panel opens showing recent alerts'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   const refs = getRefs()
@@ -934,7 +936,7 @@ await run('Notifications bell', async () => {
   pass()
 })
 
-await run('Inbox settings navigation', async () => {
+await run('Inbox settings navigation', ['Click ⚙️ Settings icon in sidebar → Navigate to Settings page → Configure inbox preferences'], async () => {
   const refs = getRefs()
   const ref  = findRef(refs, 'settings')
   if (!ref) { warn('Settings button not found'); pass('Not visible'); return }
@@ -948,7 +950,7 @@ await run('Inbox settings navigation', async () => {
   pass()
 })
 
-await run('Getting started panel', async () => {
+await run('Getting started panel', ['Click "Getting Started" link in sidebar → Onboarding checklist opens showing setup steps'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs = getRefs()
@@ -961,7 +963,7 @@ await run('Getting started panel', async () => {
   pass()
 })
 
-await run('Analytics link from inbox', async () => {
+await run('Analytics link from inbox', ['Click Analytics in sidebar → Dashboard page loads showing message stats and charts'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3500)
   const refs = getRefs()
@@ -981,7 +983,7 @@ await run('Analytics link from inbox', async () => {
 suite('Performance & Resilience', '⚡')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Inbox initial load time', async () => {
+await run('Inbox initial load time', ['Open browser → Navigate to /inbox → Measure time until page is interactive (target: under 3 seconds)'], async () => {
   const t = Date.now()
   ab('open', `${BASE_URL}/inbox`)
   await wait(300)
@@ -994,7 +996,7 @@ await run('Inbox initial load time', async () => {
   pass()
 })
 
-await run('Rapid filter tab switching — no crash', async () => {
+await run('Rapid filter tab switching — no crash', ['Quickly click Unread → Assigned to Me → Unassigned → Individuals → Groups tabs in fast succession → App stays stable'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   for (const t of ['Unread', 'Assigned to Me', 'Unassigned', 'Individuals', 'Groups']) {
@@ -1007,7 +1009,7 @@ await run('Rapid filter tab switching — no crash', async () => {
   pass()
 })
 
-await run('Repeated search queries — no crash', async () => {
+await run('Repeated search queries — no crash', ['Type "hello" in search → clear → type "test" → clear → repeat 4 times rapidly → No crash or freeze'], async () => {
   ab('open', `${BASE_URL}/inbox`)
   await wait(3000)
   const refs = getRefs()
@@ -1022,7 +1024,7 @@ await run('Repeated search queries — no crash', async () => {
   pass()
 })
 
-await run('Back navigation from conversation', async () => {
+await run('Back navigation from conversation', ['Open a conversation → Press browser Back button → Returns to conversation list without crash'], async () => {
   await openFirstConversation()
   ab('navigate', 'back')
   await wait(2000)

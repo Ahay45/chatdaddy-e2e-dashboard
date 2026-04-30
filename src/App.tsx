@@ -36,6 +36,7 @@ interface Step {
   duration: number
   findings: string[]
   errors: string[]
+  userSteps?: string[]
   screenshot: string | null
 }
 
@@ -90,7 +91,7 @@ function StatCard({ label, value, color, icon }: { label: string; value: number 
 function StepRow({ step, idx }: { step: Step; idx: number }) {
   const [open, setOpen] = useState(true)
   const s = S[step.status]
-  const hasDetails = step.findings.length > 0 || step.errors.length > 0 || step.screenshot
+  const hasDetails = (step.userSteps?.length ?? 0) > 0 || step.findings.length > 0 || step.errors.length > 0 || step.screenshot
 
   return (
     <Box sx={{
@@ -135,6 +136,31 @@ function StepRow({ step, idx }: { step: Step; idx: number }) {
       {/* Expanded details — always open by default */}
       <Collapse in={open}>
         <Box sx={{ px: 3, pb: 1.5, borderTop: `1px solid ${alpha('#fff', 0.04)}` }}>
+          {/* User Steps */}
+          {step.userSteps && step.userSteps.length > 0 && (
+            <Box sx={{ mt: 1.25, p: 1.25, borderRadius: '8px', bgcolor: alpha('#6366F1', 0.05), border: `1px solid ${alpha('#6366F1', 0.15)}` }}>
+              <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#818CF8', mb: 0.75 }}>
+                How to use
+              </Typography>
+              {step.userSteps.map((us, i) => {
+                const parts = us.split(' → ')
+                return (
+                  <Box key={i} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.4, mb: 0.3 }}>
+                    {parts.map((part, pi) => (
+                      <Box key={pi} sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                        <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.65), lineHeight: 1.5, bgcolor: alpha('#fff', 0.04), px: 0.75, py: 0.15, borderRadius: '4px' }}>
+                          {part}
+                        </Typography>
+                        {pi < parts.length - 1 && (
+                          <Typography sx={{ fontSize: '0.625rem', color: '#6366F1', fontWeight: 700 }}>→</Typography>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                )
+              })}
+            </Box>
+          )}
           {/* Findings */}
           {step.findings.length > 0 && (
             <Box sx={{ mt: 1.25 }}>
