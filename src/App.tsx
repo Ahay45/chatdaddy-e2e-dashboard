@@ -1,0 +1,439 @@
+import { useState, useEffect, useMemo } from 'react'
+import {
+  Box, Typography, Chip, LinearProgress, IconButton,
+  Tooltip, alpha, ThemeProvider, createTheme, CssBaseline, Collapse,
+} from '@mui/material'
+import {
+  CheckCircle2, XCircle, SkipForward, RefreshCw, Clock,
+  Globe, FlaskConical, Terminal, AlertTriangle, ChevronDown,
+  ChevronUp, Camera, TrendingUp, Activity, Zap, Info,
+} from 'lucide-react'
+
+// ─── Theme ────────────────────────────────────────────────────────────────────
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: { default: '#0A0A0F', paper: '#13131A' },
+    primary: { main: '#0F5BFF' },
+  },
+  shape: { borderRadius: 10 },
+  typography: { fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif' },
+})
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Step {
+  name: string
+  status: 'pass' | 'fail' | 'skip'
+  duration: number
+  findings: string[]
+  errors: string[]
+  screenshot: string | null
+}
+
+interface Suite {
+  name: string
+  icon: string
+  durationMs: number
+  summary: { passed: number; failed: number; skipped: number; total: number }
+  steps: Step[]
+}
+
+interface Results {
+  url: string
+  runAt: string | null
+  mode: string
+  durationMs: number
+  summary: { passed: number; failed: number; skipped: number; total: number }
+  suites: Suite[]
+}
+
+// ─── Status config ─────────────────────────────────────────────────────────
+
+const S = {
+  pass: { color: '#10B981', bg: alpha('#10B981', 0.1), label: 'Pass', icon: <CheckCircle2 size={14} /> },
+  fail: { color: '#EF4444', bg: alpha('#EF4444', 0.1), label: 'Fail', icon: <XCircle size={14} /> },
+  skip: { color: '#F59E0B', bg: alpha('#F59E0B', 0.1), label: 'Skip', icon: <SkipForward size={14} /> },
+} as const
+
+// ─── Stat Card ───────────────────────────────────────────────────────────────
+
+function StatCard({ label, value, color, icon }: { label: string; value: number | string; color: string; icon: React.ReactNode }) {
+  return (
+    <Box sx={{
+      flex: '1 1 100px', p: 2, borderRadius: '14px',
+      bgcolor: 'background.paper', border: '1px solid', borderColor: alpha(color, 0.2),
+    }}>
+      <Box sx={{ color, display: 'flex', alignItems: 'center', gap: 0.6, mb: 0.5 }}>
+        {icon}
+        <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color }}>
+          {label}
+        </Typography>
+      </Box>
+      <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color, lineHeight: 1 }}>{value}</Typography>
+    </Box>
+  )
+}
+
+// ─── Step Row ────────────────────────────────────────────────────────────────
+
+function StepRow({ step, idx }: { step: Step; idx: number }) {
+  const [open, setOpen] = useState(step.status === 'fail')
+  const s = S[step.status]
+  const hasDetails = step.findings.length > 0 || step.errors.length > 0 || step.screenshot
+
+  return (
+    <Box sx={{
+      borderBottom: '1px solid', borderColor: alpha('#fff', 0.04),
+      '&:last-child': { borderBottom: 'none' },
+    }}>
+      {/* Row header */}
+      <Box
+        onClick={() => hasDetails && setOpen(o => !o)}
+        sx={{
+          display: 'flex', alignItems: 'center', gap: 1.5,
+          px: 2.5, py: 1.25,
+          cursor: hasDetails ? 'pointer' : 'default',
+          transition: 'background 0.1s',
+          '&:hover': hasDetails ? { bgcolor: alpha('#fff', 0.015) } : {},
+        }}
+      >
+        <Typography sx={{ fontSize: '0.5625rem', fontFamily: 'monospace', color: alpha('#fff', 0.2), minWidth: 18, flexShrink: 0 }}>
+          {String(idx + 1).padStart(2, '0')}
+        </Typography>
+        <Box sx={{ color: s.color, flexShrink: 0 }}>{s.icon}</Box>
+        <Typography sx={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600, lineHeight: 1.4 }}>
+          {step.name}
+        </Typography>
+        {step.screenshot && (
+          <Tooltip title="Screenshot captured">
+            <Box sx={{ color: alpha('#fff', 0.25) }}><Camera size={12} /></Box>
+          </Tooltip>
+        )}
+        <Typography sx={{ fontSize: '0.5625rem', color: alpha('#fff', 0.2), fontFamily: 'monospace', flexShrink: 0 }}>
+          {step.duration > 0 ? `${step.duration}ms` : '—'}
+        </Typography>
+        <Chip label={s.label} size="small"
+          sx={{ height: 18, fontSize: '0.5rem', fontWeight: 800, bgcolor: s.bg, color: s.color, borderRadius: '5px', flexShrink: 0 }} />
+        {hasDetails && (
+          <Box sx={{ color: alpha('#fff', 0.2), flexShrink: 0 }}>
+            {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </Box>
+        )}
+      </Box>
+
+      {/* Expanded details */}
+      <Collapse in={open}>
+        <Box sx={{ px: 3, pb: 1.5, borderTop: `1px solid ${alpha('#fff', 0.04)}` }}>
+          {/* Findings */}
+          {step.findings.length > 0 && (
+            <Box sx={{ mt: 1.25 }}>
+              <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: alpha('#fff', 0.3), mb: 0.75 }}>
+                Findings
+              </Typography>
+              {step.findings.map((f, i) => (
+                <Box key={i} sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 0.4 }}>
+                  <Box sx={{ mt: 0.15, flexShrink: 0 }}>
+                    {f.startsWith('⚠') ? <AlertTriangle size={11} color="#F59E0B" /> : <Info size={11} color={alpha('#fff', 0.3)} />}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.75rem', color: f.startsWith('⚠') ? '#F59E0B' : alpha('#fff', 0.55), lineHeight: 1.5 }}>
+                    {f.replace(/^⚠\s?/, '')}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+
+          {/* Errors */}
+          {step.errors.length > 0 && (
+            <Box sx={{ mt: 1.25, p: 1.25, borderRadius: '8px', bgcolor: alpha('#EF4444', 0.06), border: `1px solid ${alpha('#EF4444', 0.15)}` }}>
+              <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#EF4444', mb: 0.75 }}>
+                Errors
+              </Typography>
+              {step.errors.map((e, i) => (
+                <Typography key={i} sx={{ fontSize: '0.75rem', color: '#EF4444', fontFamily: 'monospace', lineHeight: 1.5 }}>
+                  {e}
+                </Typography>
+              ))}
+            </Box>
+          )}
+
+          {/* Screenshot */}
+          {step.screenshot && (
+            <Box sx={{ mt: 1.5 }}>
+              <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: alpha('#fff', 0.3), mb: 0.75 }}>
+                Screenshot
+              </Typography>
+              <Box
+                component="a"
+                href={step.screenshot}
+                target="_blank"
+                sx={{ display: 'inline-block', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${alpha('#fff', 0.08)}`, maxWidth: 480, width: '100%' }}
+              >
+                <Box
+                  component="img"
+                  src={step.screenshot}
+                  alt={step.name}
+                  sx={{ width: '100%', display: 'block' }}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none' }}
+                />
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Collapse>
+    </Box>
+  )
+}
+
+// ─── Suite Card ──────────────────────────────────────────────────────────────
+
+function SuiteCard({ suite }: { suite: Suite }) {
+  const [open, setOpen] = useState(true)
+  const s = suite.summary
+  const pct = s.total ? Math.round((s.passed / s.total) * 100) : 0
+  const color = s.failed > 0 ? '#EF4444' : s.skipped === s.total ? '#F59E0B' : '#10B981'
+
+  return (
+    <Box sx={{ borderRadius: '16px', border: '1px solid', borderColor: alpha(color, 0.2), bgcolor: 'background.paper', overflow: 'hidden', mb: 2 }}>
+      {/* Suite header */}
+      <Box
+        onClick={() => setOpen(o => !o)}
+        sx={{
+          px: 2.5, py: 1.75, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5,
+          borderBottom: open ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+          '&:hover': { bgcolor: alpha('#fff', 0.015) },
+        }}
+      >
+        <Typography sx={{ fontSize: '1.125rem', flexShrink: 0 }}>{suite.icon}</Typography>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', mb: 0.5 }}>{suite.name}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LinearProgress variant="determinate" value={pct}
+              sx={{ flex: 1, height: 5, borderRadius: 3, bgcolor: alpha('#fff', 0.06),
+                '& .MuiLinearProgress-bar': { bgcolor: color, borderRadius: 3 } }} />
+            <Typography sx={{ fontSize: '0.625rem', fontWeight: 800, color, minWidth: 30, textAlign: 'right' }}>{pct}%</Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 0.75, flexShrink: 0 }}>
+          <Chip label={`✓ ${s.passed}`} size="small"
+            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: '5px' }} />
+          {s.failed > 0 && <Chip label={`✗ ${s.failed}`} size="small"
+            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.1), color: '#EF4444', borderRadius: '5px' }} />}
+          {s.skipped > 0 && <Chip label={`~ ${s.skipped}`} size="small"
+            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '5px' }} />}
+          <Chip label={`${(suite.durationMs / 1000).toFixed(1)}s`} size="small"
+            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.1), color: '#9CA3AF', borderRadius: '5px' }} />
+        </Box>
+        <Box sx={{ color: alpha('#fff', 0.2), flexShrink: 0 }}>
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </Box>
+      </Box>
+
+      {/* Steps list */}
+      <Collapse in={open}>
+        {suite.steps.map((step, i) => <StepRow key={i} step={step} idx={i} />)}
+      </Collapse>
+    </Box>
+  )
+}
+
+// ─── Empty State ─────────────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <Box sx={{ py: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ color: alpha('#fff', 0.1) }}><FlaskConical size={52} /></Box>
+      <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: alpha('#fff', 0.35) }}>No test results yet</Typography>
+      <Typography sx={{ fontSize: '0.8125rem', color: alpha('#fff', 0.2), textAlign: 'center', maxWidth: 340, lineHeight: 1.7 }}>
+        Run the E2E agent to start testing theo.chatdaddy.tech
+      </Typography>
+      <Box sx={{ mt: 1, p: 1.75, borderRadius: '10px', bgcolor: alpha('#fff', 0.03), border: `1px solid ${alpha('#fff', 0.07)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Terminal size={13} color={alpha('#fff', 0.3)} />
+        <Typography sx={{ fontSize: '0.75rem', fontFamily: 'monospace', color: alpha('#fff', 0.45) }}>
+          npm run e2e
+        </Typography>
+      </Box>
+    </Box>
+  )
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [data, setData] = useState<Results | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [lastRefresh, setLastRefresh] = useState(Date.now())
+  const [filter, setFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const r = await fetch('/e2e-results.json?t=' + Date.now())
+      setData(await r.json())
+    } catch {
+      setData(null)
+    } finally {
+      setLoading(false)
+      setLastRefresh(Date.now())
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const s = data?.summary ?? { passed: 0, failed: 0, skipped: 0, total: 0 }
+  const hasRun = !!data?.runAt && s.total > 0
+  const passPct = s.total ? Math.round((s.passed / s.total) * 100) : 0
+  const barColor = s.failed > 0 ? '#EF4444' : s.total === 0 ? '#374151' : '#10B981'
+
+  const filteredSuites = useMemo(() => {
+    if (!data) return []
+    if (filter === 'all') return data.suites
+    return data.suites
+      .map(suite => ({ ...suite, steps: suite.steps.filter(st => st.status === filter) }))
+      .filter(suite => suite.steps.length > 0)
+  }, [data, filter])
+
+  const filterCounts = useMemo(() => ({
+    all:  data?.suites.flatMap(s => s.steps).length ?? 0,
+    pass: data?.suites.flatMap(s => s.steps).filter(st => st.status === 'pass').length ?? 0,
+    fail: data?.suites.flatMap(s => s.steps).filter(st => st.status === 'fail').length ?? 0,
+    skip: data?.suites.flatMap(s => s.steps).filter(st => st.status === 'skip').length ?? 0,
+  }), [data])
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', px: { xs: 2, md: 5 }, py: 5, maxWidth: 900, mx: 'auto' }}>
+
+        {/* ── Header ── */}
+        <Box sx={{ mb: 3.5, display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <Box sx={{ p: 0.875, borderRadius: '12px', bgcolor: alpha('#0F5BFF', 0.12), color: '#0F5BFF', display: 'flex', flexShrink: 0 }}>
+            <FlaskConical size={22} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              E2E Test Results
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.3 }}>
+              <Globe size={11} color={alpha('#fff', 0.3)} />
+              <Typography sx={{ fontSize: '0.75rem', color: alpha('#fff', 0.3) }}>
+                {data?.url ?? 'https://theo.chatdaddy.tech'}
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+            {data?.mode && (
+              <Chip label={data.mode} size="small"
+                sx={{ height: 20, fontSize: '0.5625rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.12), color: '#9CA3AF', borderRadius: '6px' }} />
+            )}
+            {hasRun && data?.durationMs && (
+              <Chip
+                label={`${(data.durationMs / 1000).toFixed(1)}s total`}
+                size="small"
+                icon={<Zap size={10} color="#F59E0B" style={{ marginLeft: 6 }} />}
+                sx={{ height: 20, fontSize: '0.5625rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '6px' }}
+              />
+            )}
+            <Tooltip title="Refresh results">
+              <IconButton onClick={load} size="small"
+                sx={{ color: 'text.secondary', border: '1px solid', borderColor: alpha('#fff', 0.08), borderRadius: '8px', p: 0.75 }}>
+                <RefreshCw size={14} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        {/* ── Stat cards ── */}
+        {hasRun && (
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+            <StatCard label="Passed"   value={s.passed}  color="#10B981" icon={<CheckCircle2 size={12} />} />
+            <StatCard label="Failed"   value={s.failed}  color="#EF4444" icon={<XCircle size={12} />} />
+            <StatCard label="Skipped"  value={s.skipped} color="#F59E0B" icon={<SkipForward size={12} />} />
+            <StatCard label="Total"    value={s.total}   color="#6366F1" icon={<Activity size={12} />} />
+            <StatCard label="Suites"   value={data?.suites.length ?? 0} color="#0EA5E9" icon={<TrendingUp size={12} />} />
+          </Box>
+        )}
+
+        {/* ── Progress bar ── */}
+        {hasRun && (
+          <Box sx={{ p: 2.5, borderRadius: '16px', bgcolor: 'background.paper', border: '1px solid', borderColor: alpha('#fff', 0.06), mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: alpha('#fff', 0.6) }}>Overall Pass Rate</Typography>
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: barColor, lineHeight: 1 }}>{passPct}%</Typography>
+            </Box>
+            <LinearProgress variant="determinate" value={passPct}
+              sx={{ height: 10, borderRadius: 5, bgcolor: alpha('#fff', 0.06),
+                '& .MuiLinearProgress-bar': { bgcolor: barColor, borderRadius: 5 } }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.25, gap: 1 }}>
+              <Clock size={11} color={alpha('#fff', 0.25)} />
+              <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.25) }}>
+                {data?.runAt ? new Date(data.runAt).toLocaleString() : '—'}
+              </Typography>
+              {s.failed > 0 && (
+                <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <AlertTriangle size={12} color="#EF4444" />
+                  <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, color: '#EF4444' }}>
+                    {s.failed} step{s.failed > 1 ? 's' : ''} failed
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* ── Filters ── */}
+        {hasRun && (
+          <Box sx={{ display: 'flex', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
+            {(['all', 'pass', 'fail', 'skip'] as const).map(f => {
+              const color = f === 'all' ? '#0F5BFF' : f === 'pass' ? '#10B981' : f === 'fail' ? '#EF4444' : '#F59E0B'
+              const active = filter === f
+              return (
+                <Box key={f} onClick={() => setFilter(f)} sx={{
+                  px: 1.75, py: 0.625, borderRadius: '9px', cursor: 'pointer',
+                  border: '1px solid', borderColor: active ? color : alpha('#fff', 0.08),
+                  bgcolor: active ? alpha(color, 0.1) : 'transparent',
+                  transition: 'all 0.15s', userSelect: 'none',
+                  '&:hover': { borderColor: active ? color : alpha('#fff', 0.18) },
+                }}>
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'capitalize', color: active ? color : alpha('#fff', 0.4) }}>
+                    {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}{' '}
+                    <span style={{ opacity: 0.65 }}>({filterCounts[f]})</span>
+                  </Typography>
+                </Box>
+              )
+            })}
+          </Box>
+        )}
+
+        {/* ── Main content ── */}
+        {loading ? (
+          <Box sx={{ py: 8, textAlign: 'center' }}>
+            <Typography sx={{ color: alpha('#fff', 0.3) }}>Loading…</Typography>
+          </Box>
+        ) : !hasRun ? (
+          <EmptyState />
+        ) : filteredSuites.length === 0 ? (
+          <Box sx={{ py: 6, textAlign: 'center' }}>
+            <Typography sx={{ color: alpha('#fff', 0.3), fontSize: '0.875rem' }}>No steps match this filter.</Typography>
+          </Box>
+        ) : (
+          filteredSuites.map((suite, i) => <SuiteCard key={i} suite={suite} />)
+        )}
+
+        {/* ── Footer ── */}
+        <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid ${alpha('#fff', 0.05)}`, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Terminal size={12} color={alpha('#fff', 0.2)} />
+          <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.2), fontFamily: 'monospace' }}>
+            npm run e2e  ·  npm run e2e:headless  ·  CD_EMAIL=x CD_PASSWORD=y npm run e2e:save-auth
+          </Typography>
+          <Typography sx={{ ml: 'auto', fontSize: '0.5625rem', color: alpha('#fff', 0.15) }}>
+            refreshed {new Date(lastRefresh).toLocaleTimeString()}
+          </Typography>
+        </Box>
+
+      </Box>
+    </ThemeProvider>
+  )
+}
