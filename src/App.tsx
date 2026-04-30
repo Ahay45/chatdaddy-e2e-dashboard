@@ -86,11 +86,9 @@ function StatCard({ label, value, color, icon }: { label: string; value: number 
 // ─── Step Row ────────────────────────────────────────────────────────────────
 
 function StepRow({ step, idx }: { step: Step; idx: number }) {
-  const [open, setOpen] = useState(step.status !== 'pass')
+  const [open, setOpen] = useState(true)
   const s = S[step.status]
   const hasDetails = step.findings.length > 0 || step.errors.length > 0 || step.screenshot
-  // first non-warning finding shown inline as subtitle
-  const subtitle = step.findings.find(f => !f.startsWith('⚠')) ?? step.findings[0]
 
   return (
     <Box sx={{
@@ -101,37 +99,20 @@ function StepRow({ step, idx }: { step: Step; idx: number }) {
       <Box
         onClick={() => hasDetails && setOpen(o => !o)}
         sx={{
-          display: 'flex', alignItems: 'flex-start', gap: 1.5,
+          display: 'flex', alignItems: 'center', gap: 1.5,
           px: 2.5, py: 1.25,
           cursor: hasDetails ? 'pointer' : 'default',
           transition: 'background 0.1s',
           '&:hover': hasDetails ? { bgcolor: alpha('#fff', 0.015) } : {},
         }}
       >
-        <Typography sx={{ fontSize: '0.5625rem', fontFamily: 'monospace', color: alpha('#fff', 0.2), minWidth: 18, flexShrink: 0, pt: 0.15 }}>
+        <Typography sx={{ fontSize: '0.5625rem', fontFamily: 'monospace', color: alpha('#fff', 0.2), minWidth: 18, flexShrink: 0 }}>
           {String(idx + 1).padStart(2, '0')}
         </Typography>
-        <Box sx={{ color: s.color, flexShrink: 0, pt: 0.1 }}>{s.icon}</Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, lineHeight: 1.4 }}>
-            {step.name}
-          </Typography>
-          {/* inline subtitle — first finding shown always */}
-          {subtitle && !open && (
-            <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.28), lineHeight: 1.4, mt: 0.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {subtitle.replace(/^⚠\s?/, '')}
-            </Typography>
-          )}
-          {/* warnings shown inline even when closed */}
-          {!open && step.findings.filter(f => f.startsWith('⚠')).map((f, i) => (
-            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
-              <AlertTriangle size={10} color="#F59E0B" />
-              <Typography sx={{ fontSize: '0.6875rem', color: '#F59E0B', lineHeight: 1.4 }}>
-                {f.replace(/^⚠\s?/, '')}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
+        <Box sx={{ color: s.color, flexShrink: 0 }}>{s.icon}</Box>
+        <Typography sx={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600, lineHeight: 1.4 }}>
+          {step.name}
+        </Typography>
         {step.screenshot && (
           <Tooltip title="Screenshot captured">
             <Box sx={{ color: alpha('#fff', 0.25) }}><Camera size={12} /></Box>
@@ -149,7 +130,7 @@ function StepRow({ step, idx }: { step: Step; idx: number }) {
         )}
       </Box>
 
-      {/* Expanded details */}
+      {/* Expanded details — always open by default */}
       <Collapse in={open}>
         <Box sx={{ px: 3, pb: 1.5, borderTop: `1px solid ${alpha('#fff', 0.04)}` }}>
           {/* Findings */}
