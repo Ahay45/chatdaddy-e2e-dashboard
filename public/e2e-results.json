@@ -1,537 +1,44 @@
 {
-  "url": "https://theo.chatdaddy.tech/inbox",
-  "runAt": "2026-04-30T07:26:45.697Z",
+  "url": "https://theo.chatdaddy.tech",
+  "runAt": "2026-04-30T07:45:46.854Z",
   "mode": "headed",
-  "durationMs": 1633469,
+  "durationMs": 339040,
   "summary": {
-    "passed": 65,
-    "failed": 4,
+    "passed": 23,
+    "failed": 0,
     "skipped": 0,
-    "total": 69
+    "total": 23
   },
   "suites": [
     {
-      "name": "Inbox Load & Layout",
-      "icon": "🏠",
-      "durationMs": 8801,
+      "name": "Page Load & Session Check",
+      "icon": "🌐",
+      "durationMs": 45296,
       "summary": {
-        "passed": 4,
-        "failed": 1,
-        "skipped": 0,
-        "total": 5
-      },
-      "steps": [
-        {
-          "name": "Inbox page loads without crash",
-          "status": "pass",
-          "duration": 8120,
-          "findings": [
-            "URL: https://theo.chatdaddy.tech/inbox/"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Sidebar navigation visible",
-          "status": "pass",
-          "duration": 169,
-          "findings": [
-            "Nav items: inbox, contacts, channels, calls, automation, marketing"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Conversation list renders",
-          "status": "fail",
-          "duration": 170,
-          "findings": [
-            "Conversation rows (Assign buttons): 0"
-          ],
-          "errors": [
-            "No conversations found in inbox"
-          ],
-          "screenshot": null
-        },
-        {
-          "name": "Search bar present",
-          "status": "pass",
-          "duration": 173,
-          "findings": [
-            "Search ref: @e20"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Inbox top-bar controls visible",
-          "status": "pass",
-          "duration": 169,
-          "findings": [
-            "Total interactive elements: 32",
-            "Buttons: 28",
-            "Inputs: 1"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Filter Tabs",
-      "icon": "🗂️",
-      "durationMs": 208277,
-      "summary": {
-        "passed": 6,
+        "passed": 2,
         "failed": 0,
         "skipped": 0,
-        "total": 6
+        "total": 2
       },
       "steps": [
         {
-          "name": "Tab: \"Unread\"",
+          "name": "Open site and detect session",
           "status": "pass",
-          "duration": 6331,
+          "duration": 25292,
           "findings": [
-            "Ref: @e10",
-            "Elements after: 32"
+            "URL: (loading)",
+            "Elements: 0",
+            "Active session detected — already logged in"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Tab: \"Assigned to Me\"",
-          "status": "pass",
-          "duration": 46103,
-          "findings": [
-            "Ref: @e11",
-            "Elements after: 0"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Tab: \"Unassigned\"",
-          "status": "pass",
-          "duration": 65357,
-          "findings": [
-            "Ref: @e12",
-            "Elements after: 0"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Tab: \"Individuals\"",
-          "status": "pass",
-          "duration": 43004,
-          "findings": [
-            "⚠ \"Individuals\" tab not found",
-            "Tab not present in this account"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Tab: \"Groups\"",
-          "status": "pass",
-          "duration": 40770,
-          "findings": [
-            "Ref: @e14",
-            "Elements after: 32"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Tab: \"Archived\"",
-          "status": "pass",
-          "duration": 6712,
-          "findings": [
-            "Ref: @e15",
-            "Elements after: 134"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Search",
-      "icon": "🔍",
-      "durationMs": 84596,
-      "summary": {
-        "passed": 1,
-        "failed": 2,
-        "skipped": 0,
-        "total": 3
-      },
-      "steps": [
-        {
-          "name": "Search bar focusable",
-          "status": "fail",
-          "duration": 23589,
-          "findings": [],
-          "errors": [
-            "Search input not found"
-          ],
-          "screenshot": null
-        },
-        {
-          "name": "Type query — list updates without crash",
-          "status": "fail",
-          "duration": 20002,
-          "findings": [],
-          "errors": [
-            "Search input not found"
-          ],
-          "screenshot": null
-        },
-        {
-          "name": "Clear search restores full list",
-          "status": "pass",
-          "duration": 41005,
-          "findings": [
-            "Search cleared"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Inbox Controls",
-      "icon": "🎚️",
-      "durationMs": 83009,
-      "summary": {
-        "passed": 3,
-        "failed": 0,
-        "skipped": 0,
-        "total": 3
-      },
-      "steps": [
-        {
-          "name": "Team inbox switcher",
-          "status": "pass",
-          "duration": 43005,
-          "findings": [
-            "⚠ Team inbox switcher not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Sort order (newest / oldest)",
-          "status": "pass",
-          "duration": 20001,
-          "findings": [
-            "⚠ Sort control not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Channel filter (WhatsApp / Facebook / etc.)",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Channel filter not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Filter Panel",
-      "icon": "🎛️",
-      "durationMs": 92366,
-      "summary": {
-        "passed": 4,
-        "failed": 0,
-        "skipped": 0,
-        "total": 4
-      },
-      "steps": [
-        {
-          "name": "Open filter panel",
-          "status": "pass",
-          "duration": 43005,
-          "findings": [
-            "⚠ Filter button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Assignee filter",
-          "status": "pass",
-          "duration": 9357,
-          "findings": [
-            "Assignee filter opened (@e4)"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Tags filter",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Tags filter not found",
-            "Not in view"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Date range filter",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Date range filter not found",
-            "Not in view"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Conversation Row Actions",
-      "icon": "💬",
-      "durationMs": 84758,
-      "summary": {
-        "passed": 3,
-        "failed": 1,
-        "skipped": 0,
-        "total": 4
-      },
-      "steps": [
-        {
-          "name": "Open first conversation",
-          "status": "fail",
-          "duration": 44006,
-          "findings": [],
-          "errors": [
-            "Could not find any conversation to open"
-          ],
-          "screenshot": null
-        },
-        {
-          "name": "Assign button opens agent picker",
-          "status": "pass",
-          "duration": 12361,
-          "findings": [
-            "⚠ Assign button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "More (⋯) menu shows actions",
-          "status": "pass",
-          "duration": 4327,
-          "findings": [
-            "⚠ \"More\" button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Bulk select toggle",
-          "status": "pass",
-          "duration": 24064,
-          "findings": [
-            "⚠ Bulk select not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Message View",
-      "icon": "📨",
-      "durationMs": 68914,
-      "summary": {
-        "passed": 3,
-        "failed": 0,
-        "skipped": 0,
-        "total": 3
-      },
-      "steps": [
-        {
-          "name": "Message thread renders inside conversation",
-          "status": "pass",
-          "duration": 68406,
-          "findings": [
-            "Elements in view: 0",
-            "Compose area found: false",
-            "⚠ Compose area not detected — check if conversation opened"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Contact name / header visible",
-          "status": "pass",
-          "duration": 339,
-          "findings": [
-            "Resolve button: not found",
-            "⚠ Resolve button not visible in header"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Message timestamps visible",
-          "status": "pass",
-          "duration": 169,
-          "findings": [
-            "Timestamps detected: false",
-            "⚠ No timestamps found in message view"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Compose & Send",
-      "icon": "✍️",
-      "durationMs": 220043,
-      "summary": {
-        "passed": 11,
-        "failed": 0,
-        "skipped": 0,
-        "total": 11
-      },
-      "steps": [
-        {
-          "name": "Compose box is focusable",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Compose box not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Type text in compose",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Compose box not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Send button visible and clickable",
-          "status": "pass",
-          "duration": 20001,
-          "findings": [
-            "⚠ Send button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Rich text toolbar (bold / italic / underline)",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Rich text toolbar not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Emoji picker opens",
-          "status": "pass",
-          "duration": 20007,
-          "findings": [
-            "⚠ Emoji picker button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Attachment button (image / file upload)",
-          "status": "pass",
-          "duration": 20005,
-          "findings": [
-            "⚠ Attach button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Template / quick reply picker",
+          "name": "No crash on load",
           "status": "pass",
           "duration": 20004,
           "findings": [
-            "⚠ Template picker not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "AI reply suggestion button",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ AI reply button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Private / internal note toggle",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Internal note button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Scheduled send button",
-          "status": "pass",
-          "duration": 20011,
-          "findings": [
-            "⚠ Scheduled send button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Channel selector (multi-channel)",
-          "status": "pass",
-          "duration": 20001,
-          "findings": [
-            "⚠ Channel selector not found",
-            "Not visible"
+            "No error boundary / chunk errors"
           ],
           "errors": [],
           "screenshot": null
@@ -539,67 +46,43 @@
       ]
     },
     {
-      "name": "Message Actions",
-      "icon": "⚙️",
-      "durationMs": 100011,
+      "name": "Login Flow",
+      "icon": "🔐",
+      "durationMs": 0,
       "summary": {
-        "passed": 5,
+        "passed": 3,
         "failed": 0,
         "skipped": 0,
-        "total": 5
+        "total": 3
       },
       "steps": [
         {
-          "name": "Hover over message reveals action bar",
+          "name": "Detect login form fields",
           "status": "pass",
-          "duration": 20003,
+          "duration": 0,
           "findings": [
-            "⚠ Message action bar not detected (may need hover)",
-            "Not visible without hover"
+            "Already authenticated",
+            "Session active"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Emoji reaction on message",
+          "name": "Empty submit — validation check",
           "status": "pass",
-          "duration": 20001,
+          "duration": 0,
           "findings": [
-            "⚠ React button not found",
-            "Not visible"
+            "Session active — skipping"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Quote reply (reply to specific message)",
+          "name": "Login with phone + password",
           "status": "pass",
-          "duration": 20003,
+          "duration": 0,
           "findings": [
-            "⚠ Quote reply not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Copy message text",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Copy button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Delete / unsend message",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Delete message not found",
-            "Not visible"
+            "Already authenticated — session reused"
           ],
           "errors": [],
           "screenshot": null
@@ -607,121 +90,9 @@
       ]
     },
     {
-      "name": "Conversation Management",
-      "icon": "🗂️",
-      "durationMs": 180020,
-      "summary": {
-        "passed": 9,
-        "failed": 0,
-        "skipped": 0,
-        "total": 9
-      },
-      "steps": [
-        {
-          "name": "Resolve conversation button",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Resolve button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Assign to team member (from inside conversation)",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Assign button not found inside conversation",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Snooze conversation",
-          "status": "pass",
-          "duration": 20003,
-          "findings": [
-            "⚠ Snooze button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Pin conversation",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Pin button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Mute conversation",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Mute button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Archive conversation",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Archive button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Mark as unread",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Mark as unread not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Delete conversation",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Delete conversation not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Add label / tag to conversation",
-          "status": "pass",
-          "duration": 20002,
-          "findings": [
-            "⚠ Label/tag button not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Contact Panel (Right Sidebar)",
-      "icon": "👤",
-      "durationMs": 104863,
+      "name": "Authenticated Pages",
+      "icon": "🔑",
+      "durationMs": 83066,
       "summary": {
         "passed": 7,
         "failed": 0,
@@ -730,79 +101,93 @@
       },
       "steps": [
         {
-          "name": "Contact panel visible or togglable",
+          "name": "💬 Inbox (/inbox)",
           "status": "pass",
-          "duration": 20002,
+          "duration": 44008,
           "findings": [
-            "⚠ Contact panel toggle not found",
-            "May be auto-visible"
+            "URL: ",
+            "Interactive elements: 0",
+            "⚠ No expected content keywords — page may still be loading"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Contact name and phone visible in panel",
+          "name": "👥 CRM (/crm)",
           "status": "pass",
-          "duration": 20003,
+          "duration": 15022,
           "findings": [
-            "Phone visible: false",
-            "Contact label visible: false",
-            "⚠ Contact details not detected in panel"
+            "URL: https://theo.chatdaddy.tech/crm/",
+            "Interactive elements: 159",
+            "Content detected: crm, contact, board",
+            "Buttons: 24",
+            "Inputs: 1"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Edit contact details",
+          "name": "📊 Dashboard (/dashboard)",
           "status": "pass",
-          "duration": 20003,
+          "duration": 4803,
           "findings": [
-            "⚠ Edit contact button not found",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/dashboard/",
+            "Interactive elements: 53",
+            "Content detected: dashboard, analytics",
+            "Buttons: 31"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Add custom attribute / field",
+          "name": "📢 Broadcasts (/broadcasts)",
           "status": "pass",
-          "duration": 20002,
+          "duration": 4805,
           "findings": [
-            "⚠ Custom attribute not found",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/broadcasts/",
+            "Interactive elements: 433",
+            "Content detected: broadcast, campaign",
+            "Buttons: 379",
+            "Inputs: 1"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Add / edit tags on contact",
+          "name": "🤖 Automation (/automation)",
           "status": "pass",
-          "duration": 20003,
+          "duration": 4778,
           "findings": [
-            "⚠ Contact tags field not found",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/automation/",
+            "Interactive elements: 1",
+            "Content detected: automation"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "View conversation history list",
+          "name": "⚙️ Settings (/settings)",
           "status": "pass",
-          "duration": 4685,
+          "duration": 4791,
           "findings": [
-            "⚠ Conversation history not found",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/settings/",
+            "Interactive elements: 34",
+            "Content detected: setting, profile, team",
+            "Buttons: 26"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "CRM / notes section in contact panel",
+          "name": "📞 Calls (/calls)",
           "status": "pass",
-          "duration": 165,
+          "duration": 4859,
           "findings": [
-            "⚠ CRM/notes section not found in panel",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/calls/",
+            "Interactive elements: 99",
+            "Content detected: call",
+            "Buttons: 22",
+            "Inputs: 2"
           ],
           "errors": [],
           "screenshot": null
@@ -810,76 +195,9 @@
       ]
     },
     {
-      "name": "Sidebar & Navigation",
-      "icon": "◀️",
-      "durationMs": 129665,
-      "summary": {
-        "passed": 5,
-        "failed": 0,
-        "skipped": 0,
-        "total": 5
-      },
-      "steps": [
-        {
-          "name": "Sidebar collapse / expand",
-          "status": "pass",
-          "duration": 24079,
-          "findings": [
-            "⚠ Sidebar toggle not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Notifications bell",
-          "status": "pass",
-          "duration": 42697,
-          "findings": [
-            "⚠ Notifications bell not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Inbox settings navigation",
-          "status": "pass",
-          "duration": 4473,
-          "findings": [
-            "Navigated to: https://theo.chatdaddy.tech/settings"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Getting started panel",
-          "status": "pass",
-          "duration": 24179,
-          "findings": [
-            "⚠ Getting started not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        },
-        {
-          "name": "Analytics link from inbox",
-          "status": "pass",
-          "duration": 34237,
-          "findings": [
-            "⚠ Analytics link not found",
-            "Not visible"
-          ],
-          "errors": [],
-          "screenshot": null
-        }
-      ]
-    },
-    {
-      "name": "Performance & Resilience",
-      "icon": "⚡",
-      "durationMs": 268146,
+      "name": "Error Resilience",
+      "icon": "🚨",
+      "durationMs": 38994,
       "summary": {
         "passed": 4,
         "failed": 0,
@@ -888,42 +206,146 @@
       },
       "steps": [
         {
-          "name": "Inbox initial load time",
+          "name": "Invalid route — 404 not Oops",
           "status": "pass",
-          "duration": 31284,
+          "duration": 4080,
           "findings": [
-            "Time to interactive: ~31284ms",
-            "⚠ VERY SLOW (31284ms)"
+            "Landed: https://theo.chatdaddy.tech/xyzabc-does-not-exist-999/",
+            "404 page rendered correctly"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Rapid filter tab switching — no crash",
+          "name": "Deep nested invalid route — no crash",
           "status": "pass",
-          "duration": 133645,
+          "duration": 4255,
           "findings": [
-            "5 filter tabs switched rapidly — stable"
+            "URL: https://theo.chatdaddy.tech/inbox/thread/fake-id-99999/message/0/"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Repeated search queries — no crash",
+          "name": "Rapid route switching — stable",
           "status": "pass",
-          "duration": 43006,
+          "duration": 6750,
           "findings": [
-            "⚠ Search not found"
+            "5 rapid switches: no crash"
           ],
           "errors": [],
           "screenshot": null
         },
         {
-          "name": "Back navigation from conversation",
+          "name": "No chunk loading errors",
           "status": "pass",
-          "duration": 60211,
+          "duration": 23909,
           "findings": [
-            "URL after back: chrome-error://chromewebdata/"
+            "No chunk loading errors on reload"
+          ],
+          "errors": [],
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "name": "UI & Accessibility",
+      "icon": "♿",
+      "durationMs": 97172,
+      "summary": {
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0,
+        "total": 3
+      },
+      "steps": [
+        {
+          "name": "Login page element audit",
+          "status": "pass",
+          "duration": 33654,
+          "findings": [
+            "Total elements: 0",
+            "Buttons (0): none",
+            "Inputs  (0): none",
+            "Links   (0): none"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Show/hide password toggle",
+          "status": "pass",
+          "duration": 20006,
+          "findings": [
+            "⚠ \"Show password\" button not found on page"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Inbox sidebar nav items",
+          "status": "pass",
+          "duration": 43512,
+          "findings": [
+            "Total elements: 0",
+            "Nav buttons: "
+          ],
+          "errors": [],
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "icon": "⚡",
+      "durationMs": 74512,
+      "summary": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "total": 4
+      },
+      "steps": [
+        {
+          "name": "Load time — Login page",
+          "status": "pass",
+          "duration": 30935,
+          "findings": [
+            "Time to interactive: ~30935ms",
+            "⚠ Rating: VERY SLOW (30935ms)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Load time — Inbox",
+          "status": "pass",
+          "duration": 31275,
+          "findings": [
+            "Time to interactive: ~31274ms",
+            "⚠ Rating: VERY SLOW (31274ms)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Load time — Dashboard",
+          "status": "pass",
+          "duration": 11210,
+          "findings": [
+            "Time to interactive: ~11210ms",
+            "⚠ Rating: VERY SLOW (11210ms)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Load time — CRM",
+          "status": "pass",
+          "duration": 1092,
+          "findings": [
+            "Time to interactive: ~1092ms",
+            "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
           "screenshot": null
