@@ -270,7 +270,7 @@ export default function App() {
   const load = async () => {
     setLoading(true)
     try {
-      const r = await fetch('/e2e-results.json?t=' + Date.now())
+      const r = await fetch(import.meta.env.BASE_URL + 'e2e-results.json?t=' + Date.now())
       setData(await r.json())
     } catch {
       setData(null)
