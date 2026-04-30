@@ -299,6 +299,14 @@ export default function App() {
   const [filter, setFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
   const [testRunning, setTestRunning] = useState(false)
   const [serverOnline, setServerOnline] = useState(false)
+  const [liveProgress, setLiveProgress] = useState<{
+    currentSuite: string | null
+    currentStep: string | null
+    lastResult: string | null
+    log: string[]
+    steps: { suite: string; step: string; status: string }[]
+    summary: { passed: number; failed: number; skipped: number; total: number }
+  } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -320,12 +328,20 @@ export default function App() {
       setServerOnline(true)
       const wasRunning = testRunning
       setTestRunning(json.running)
-      if (wasRunning && !json.running) load() // refresh results when run completes
+      if (wasRunning && !json.running) { setLiveProgress(null); load() }
     } catch {
       setServerOnline(false)
       setTestRunning(false)
     }
   }, [testRunning, load])
+
+  const pollProgress = useCallback(async () => {
+    if (!testRunning) return
+    try {
+      const r = await fetch(`${API}/api/progress`, { signal: AbortSignal.timeout(1500) })
+      setLiveProgress(await r.json())
+    } catch { /* ignore */ }
+  }, [testRunning])
 
   const triggerRun = async (suite: 'all' | 'inbox') => {
     if (testRunning) return
@@ -345,6 +361,13 @@ export default function App() {
     const id = setInterval(pollStatus, 3000)
     return () => clearInterval(id)
   }, [pollStatus])
+
+  useEffect(() => {
+    if (!testRunning) return
+    pollProgress()
+    const id = setInterval(pollProgress, 2000)
+    return () => clearInterval(id)
+  }, [testRunning, pollProgress])
 
   const s = data?.summary ?? { passed: 0, failed: 0, skipped: 0, total: 0 }
   const hasRun = !!data?.runAt && s.total > 0
@@ -445,6 +468,68 @@ export default function App() {
             </Tooltip>
           </Box>
         </Box>
+
+        {/* ── Live progress panel ── */}
+        {testRunning && liveProgress && (
+          <Box sx={{ mb: 3, borderRadius: '16px', border: `1px solid ${alpha('#0F5BFF', 0.3)}`, bgcolor: alpha('#0F5BFF', 0.04), overflow: 'hidden' }}>
+            {/* Header */}
+            <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${alpha('#0F5BFF', 0.15)}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Loader size={14} color="#0F5BFF" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F5BFF' }}>
+                  {liveProgress.currentSuite ?? 'Starting…'}
+                </Typography>
+                {liveProgress.currentStep && (
+                  <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.45), mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    ▸ {liveProgress.currentStep}
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 0.75, flexShrink: 0 }}>
+                <Chip label={`✓ ${liveProgress.summary.passed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: '5px' }} />
+                {liveProgress.summary.failed > 0 && <Chip label={`✗ ${liveProgress.summary.failed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.1), color: '#EF4444', borderRadius: '5px' }} />}
+                {liveProgress.summary.skipped > 0 && <Chip label={`~ ${liveProgress.summary.skipped}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '5px' }} />}
+                <Chip label={`${liveProgress.summary.total} steps`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.1), color: '#9CA3AF', borderRadius: '5px' }} />
+              </Box>
+            </Box>
+
+            {/* Completed steps list */}
+            {liveProgress.steps.length > 0 && (
+              <Box sx={{ maxHeight: 220, overflowY: 'auto', px: 2.5, py: 1 }}>
+                {[...liveProgress.steps].reverse().map((s, i) => {
+                  const color = s.status === 'pass' ? '#10B981' : s.status === 'fail' ? '#EF4444' : '#F59E0B'
+                  const icon  = s.status === 'pass' ? '✓' : s.status === 'fail' ? '✗' : '~'
+                  return (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.4, borderBottom: `1px solid ${alpha('#fff', 0.03)}`, '&:last-child': { borderBottom: 'none' } }}>
+                      <Typography sx={{ fontSize: '0.625rem', fontWeight: 800, color, flexShrink: 0, width: 12 }}>{icon}</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.35), flexShrink: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+                        {s.suite}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: i === 0 ? alpha('#fff', 0.75) : alpha('#fff', 0.45), flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {s.step}
+                      </Typography>
+                    </Box>
+                  )
+                })}
+              </Box>
+            )}
+
+            {/* Progress bar */}
+            <Box sx={{ px: 2.5, pt: 0.5, pb: 1.5 }}>
+              <LinearProgress variant="indeterminate"
+                sx={{ height: 3, borderRadius: 2, bgcolor: alpha('#0F5BFF', 0.1),
+                  '& .MuiLinearProgress-bar': { bgcolor: '#0F5BFF' } }} />
+            </Box>
+          </Box>
+        )}
+
+        {/* simple spinner when running but no progress data yet */}
+        {testRunning && !liveProgress && (
+          <Box sx={{ mb: 3, p: 2, borderRadius: '16px', border: `1px solid ${alpha('#0F5BFF', 0.2)}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Loader size={14} color="#0F5BFF" style={{ animation: 'spin 1s linear infinite' }} />
+            <Typography sx={{ fontSize: '0.8125rem', color: alpha('#fff', 0.5) }}>Starting test run…</Typography>
+          </Box>
+        )}
 
         {/* ── Stat cards ── */}
         {hasRun && (
