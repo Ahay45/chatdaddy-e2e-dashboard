@@ -1,15 +1,783 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-04-30T07:53:27.587Z",
+  "runAt": "2026-04-30T08:22:08.518Z",
   "mode": "headed",
   "durationMs": 314823,
   "summary": {
-    "passed": 23,
-    "failed": 0,
+    "passed": 88,
+    "failed": 4,
     "skipped": 0,
-    "total": 23
+    "total": 92
   },
   "suites": [
+    {
+      "name": "📬 Inbox Module",
+      "icon": "📬",
+      "durationMs": 1375548,
+      "summary": {
+        "passed": 65,
+        "failed": 4,
+        "skipped": 0,
+        "total": 69
+      },
+      "steps": [
+        {
+          "name": "Inbox page loads without crash",
+          "status": "fail",
+          "duration": 40008,
+          "findings": [
+            "URL: "
+          ],
+          "errors": [
+            "Not on inbox — landed on: "
+          ],
+          "screenshot": null
+        },
+        {
+          "name": "Sidebar navigation visible",
+          "status": "fail",
+          "duration": 20004,
+          "findings": [
+            "Nav items: "
+          ],
+          "errors": [
+            "Too few nav items: "
+          ],
+          "screenshot": null
+        },
+        {
+          "name": "Conversation list renders",
+          "status": "fail",
+          "duration": 20006,
+          "findings": [
+            "Conversation rows (Assign buttons): 0"
+          ],
+          "errors": [
+            "No conversations found in inbox"
+          ],
+          "screenshot": null
+        },
+        {
+          "name": "Search bar present",
+          "status": "pass",
+          "duration": 14252,
+          "findings": [
+            "Search ref: @e20"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Inbox top-bar controls visible",
+          "status": "pass",
+          "duration": 180,
+          "findings": [
+            "Total interactive elements: 32",
+            "Buttons: 28",
+            "Inputs: 1"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Unread\"",
+          "status": "pass",
+          "duration": 23690,
+          "findings": [
+            "⚠ \"Unread\" tab not found",
+            "Tab not present in this account"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Assigned to Me\"",
+          "status": "pass",
+          "duration": 16763,
+          "findings": [
+            "Ref: @e11",
+            "Elements after: 32"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Unassigned\"",
+          "status": "pass",
+          "duration": 6280,
+          "findings": [
+            "Ref: @e12",
+            "Elements after: 32"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Individuals\"",
+          "status": "pass",
+          "duration": 45940,
+          "findings": [
+            "Ref: @e13",
+            "Elements after: 0"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Groups\"",
+          "status": "pass",
+          "duration": 43007,
+          "findings": [
+            "⚠ \"Groups\" tab not found",
+            "Tab not present in this account"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tab: \"Archived\"",
+          "status": "pass",
+          "duration": 42586,
+          "findings": [
+            "Ref: @e15",
+            "Elements after: 32"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Search bar focusable",
+          "status": "pass",
+          "duration": 5244,
+          "findings": [
+            "Clicked: @e20"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Type query — list updates without crash",
+          "status": "pass",
+          "duration": 22556,
+          "findings": [
+            "Typed \"test\" — stable"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Clear search restores full list",
+          "status": "pass",
+          "duration": 41005,
+          "findings": [
+            "Search cleared"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Team inbox switcher",
+          "status": "pass",
+          "duration": 43006,
+          "findings": [
+            "⚠ Team inbox switcher not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Sort order (newest / oldest)",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Sort control not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Channel filter (WhatsApp / Facebook / etc.)",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Channel filter not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Open filter panel",
+          "status": "pass",
+          "duration": 34423,
+          "findings": [
+            "Filter panel opened (@e2)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Assignee filter",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Assignee filter not found",
+            "Not in view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tags filter",
+          "status": "pass",
+          "duration": 20010,
+          "findings": [
+            "⚠ Tags filter not found",
+            "Not in view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Date range filter",
+          "status": "pass",
+          "duration": 20004,
+          "findings": [
+            "⚠ Date range filter not found",
+            "Not in view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Open first conversation",
+          "status": "fail",
+          "duration": 44008,
+          "findings": [],
+          "errors": [
+            "Could not find any conversation to open"
+          ],
+          "screenshot": null
+        },
+        {
+          "name": "Assign button opens agent picker",
+          "status": "pass",
+          "duration": 43505,
+          "findings": [
+            "⚠ Assign button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "More (⋯) menu shows actions",
+          "status": "pass",
+          "duration": 43504,
+          "findings": [
+            "⚠ \"More\" button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Bulk select toggle",
+          "status": "pass",
+          "duration": 39488,
+          "findings": [
+            "Bulk select mode activated"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Message thread renders inside conversation",
+          "status": "pass",
+          "duration": 65204,
+          "findings": [
+            "Elements in view: 0",
+            "Compose area found: false",
+            "⚠ Compose area not detected — check if conversation opened"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Contact name / header visible",
+          "status": "pass",
+          "duration": 40006,
+          "findings": [
+            "Resolve button: not found",
+            "⚠ Resolve button not visible in header"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Message timestamps visible",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "Timestamps detected: false",
+            "⚠ No timestamps found in message view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Compose box is focusable",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Compose box not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Type text in compose",
+          "status": "pass",
+          "duration": 20001,
+          "findings": [
+            "⚠ Compose box not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Send button visible and clickable",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Send button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Rich text toolbar (bold / italic / underline)",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Rich text toolbar not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Emoji picker opens",
+          "status": "pass",
+          "duration": 20004,
+          "findings": [
+            "⚠ Emoji picker button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Attachment button (image / file upload)",
+          "status": "pass",
+          "duration": 20004,
+          "findings": [
+            "⚠ Attach button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Template / quick reply picker",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Template picker not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "AI reply suggestion button",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ AI reply button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Private / internal note toggle",
+          "status": "pass",
+          "duration": 19997,
+          "findings": [
+            "⚠ Internal note button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Scheduled send button",
+          "status": "pass",
+          "duration": 19998,
+          "findings": [
+            "⚠ Scheduled send button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Channel selector (multi-channel)",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Channel selector not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Hover over message reveals action bar",
+          "status": "pass",
+          "duration": 20001,
+          "findings": [
+            "⚠ Message action bar not detected (may need hover)",
+            "Not visible without hover"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Emoji reaction on message",
+          "status": "pass",
+          "duration": 20004,
+          "findings": [
+            "⚠ React button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Quote reply (reply to specific message)",
+          "status": "pass",
+          "duration": 20005,
+          "findings": [
+            "⚠ Quote reply not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Copy message text",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Copy button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Delete / unsend message",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Delete message not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Resolve conversation button",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Resolve button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Assign to team member (from inside conversation)",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Assign button not found inside conversation",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Snooze conversation",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Snooze button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Pin conversation",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Pin button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Mute conversation",
+          "status": "pass",
+          "duration": 20004,
+          "findings": [
+            "⚠ Mute button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Archive conversation",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Archive button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Mark as unread",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Mark as unread not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Delete conversation",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Delete conversation not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Add label / tag to conversation",
+          "status": "pass",
+          "duration": 20002,
+          "findings": [
+            "⚠ Label/tag button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Contact panel visible or togglable",
+          "status": "pass",
+          "duration": 20003,
+          "findings": [
+            "⚠ Contact panel toggle not found",
+            "May be auto-visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Contact name and phone visible in panel",
+          "status": "pass",
+          "duration": 1656,
+          "findings": [
+            "Phone visible: false",
+            "Contact label visible: false",
+            "⚠ Contact details not detected in panel"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Edit contact details",
+          "status": "pass",
+          "duration": 172,
+          "findings": [
+            "⚠ Edit contact button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Add custom attribute / field",
+          "status": "pass",
+          "duration": 171,
+          "findings": [
+            "⚠ Custom attribute not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Add / edit tags on contact",
+          "status": "pass",
+          "duration": 176,
+          "findings": [
+            "⚠ Contact tags field not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "View conversation history list",
+          "status": "pass",
+          "duration": 175,
+          "findings": [
+            "⚠ Conversation history not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "CRM / notes section in contact panel",
+          "status": "pass",
+          "duration": 176,
+          "findings": [
+            "⚠ CRM/notes section not found in panel",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Sidebar collapse / expand",
+          "status": "pass",
+          "duration": 8682,
+          "findings": [
+            "⚠ Sidebar toggle not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Notifications bell",
+          "status": "pass",
+          "duration": 3808,
+          "findings": [
+            "⚠ Notifications bell not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Inbox settings navigation",
+          "status": "pass",
+          "duration": 196,
+          "findings": [
+            "⚠ Settings button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Getting started panel",
+          "status": "pass",
+          "duration": 4246,
+          "findings": [
+            "⚠ Getting started not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Analytics link from inbox",
+          "status": "pass",
+          "duration": 4248,
+          "findings": [
+            "⚠ Analytics link not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Inbox initial load time",
+          "status": "pass",
+          "duration": 1045,
+          "findings": [
+            "Time to interactive: ~1045ms",
+            "GOOD (< 3s) ✓"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Rapid filter tab switching — no crash",
+          "status": "pass",
+          "duration": 4791,
+          "findings": [
+            "5 filter tabs switched rapidly — stable"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Repeated search queries — no crash",
+          "status": "pass",
+          "duration": 3673,
+          "findings": [
+            "⚠ Search not found"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Back navigation from conversation",
+          "status": "pass",
+          "duration": 7585,
+          "findings": [
+            "URL after back: https://theo.chatdaddy.tech/auth/login"
+          ],
+          "errors": [],
+          "screenshot": null
+        }
+      ]
+    },
     {
       "name": "Page Load & Session Check",
       "icon": "🌐",
