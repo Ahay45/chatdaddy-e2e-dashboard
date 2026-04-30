@@ -43,6 +43,8 @@ interface Suite {
   name: string
   icon: string
   durationMs: number
+  needsRebuild?: boolean
+  rebuildReason?: string
   summary: { passed: number; failed: number; skipped: number; total: number }
   steps: Step[]
 }
@@ -216,7 +218,12 @@ function FlowCard({ suite }: { suite: Suite }) {
           {overallStatus === 'fail' ? <XCircle size={15} color="#EF4444" /> : overallStatus === 'skip' ? <SkipForward size={15} color="#F59E0B" /> : <CheckCircle2 size={15} color="#10B981" />}
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: alpha('#fff', 0.9) }}>{title}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: alpha('#fff', 0.9) }}>{title}</Typography>
+            {suite.needsRebuild && (
+              <Chip label="🔴 Needs Rebuild" size="small" sx={{ height: 17, fontSize: '0.5rem', fontWeight: 800, bgcolor: alpha('#EF4444', 0.15), color: '#EF4444', borderRadius: '5px', flexShrink: 0 }} />
+            )}
+          </Box>
           <Typography sx={{ fontSize: '0.625rem', color: alpha('#fff', 0.3), mt: 0.2 }}>
             {s.passed} of {s.total} steps passed
             {s.failed > 0 && ` · ${s.failed} failed`}
@@ -228,6 +235,17 @@ function FlowCard({ suite }: { suite: Suite }) {
           {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </Box>
       </Box>
+
+      {/* Needs Rebuild banner */}
+      {suite.needsRebuild && suite.rebuildReason && (
+        <Box sx={{ mx: 2.5, mt: 1.5, p: 1.5, borderRadius: '10px', bgcolor: alpha('#EF4444', 0.07), border: `1px solid ${alpha('#EF4444', 0.2)}`, display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+          <XCircle size={14} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+          <Box>
+            <Typography sx={{ fontSize: '0.6875rem', fontWeight: 800, color: '#EF4444', mb: 0.4 }}>Expected behaviour (v1)</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: alpha('#fff', 0.55), lineHeight: 1.6 }}>{suite.rebuildReason}</Typography>
+          </Box>
+        </Box>
+      )}
 
       {/* Step pipeline */}
       <Collapse in={open}>
