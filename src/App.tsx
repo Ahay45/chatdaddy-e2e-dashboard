@@ -194,9 +194,146 @@ function StepRow({ step, idx }: { step: Step; idx: number }) {
   )
 }
 
-// ─── Suite Card ──────────────────────────────────────────────────────────────
+// ─── Flow Pipeline Card (step-by-step journey view) ──────────────────────────
+
+function FlowCard({ suite }: { suite: Suite }) {
+  const [open, setOpen] = useState(true)
+  const s = suite.summary
+  const overallStatus = s.failed > 0 ? 'fail' : s.skipped > 0 && s.passed === 0 ? 'skip' : 'pass'
+  const borderColor = overallStatus === 'fail' ? '#EF4444' : overallStatus === 'skip' ? '#F59E0B' : '#10B981'
+  // strip "🔄 Flow: " prefix for clean title
+  const title = suite.name.replace(/^🔄\s*Flow:\s*/i, '')
+
+  return (
+    <Box sx={{ borderRadius: '16px', border: '1px solid', borderColor: alpha(borderColor, 0.25), bgcolor: 'background.paper', overflow: 'hidden', mb: 2 }}>
+      {/* Header */}
+      <Box onClick={() => setOpen(o => !o)} sx={{
+        px: 2.5, py: 1.5, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5,
+        borderBottom: open ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+        '&:hover': { bgcolor: alpha('#fff', 0.015) },
+      }}>
+        <Box sx={{ width: 28, height: 28, borderRadius: '8px', bgcolor: alpha(borderColor, 0.12), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {overallStatus === 'fail' ? <XCircle size={15} color="#EF4444" /> : overallStatus === 'skip' ? <SkipForward size={15} color="#F59E0B" /> : <CheckCircle2 size={15} color="#10B981" />}
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: alpha('#fff', 0.9) }}>{title}</Typography>
+          <Typography sx={{ fontSize: '0.625rem', color: alpha('#fff', 0.3), mt: 0.2 }}>
+            {s.passed} of {s.total} steps passed
+            {s.failed > 0 && ` · ${s.failed} failed`}
+            {s.skipped > 0 && ` · ${s.skipped} blocked`}
+            {suite.durationMs > 0 && ` · ${(suite.durationMs / 1000).toFixed(1)}s`}
+          </Typography>
+        </Box>
+        <Box sx={{ color: alpha('#fff', 0.2), flexShrink: 0 }}>
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </Box>
+      </Box>
+
+      {/* Step pipeline */}
+      <Collapse in={open}>
+        <Box sx={{ px: 2.5, py: 1.5 }}>
+          {suite.steps.map((step, i) => {
+            const isLast   = i === suite.steps.length - 1
+            const sc       = step.status === 'pass' ? '#10B981' : step.status === 'fail' ? '#EF4444' : '#6B7280'
+            const bgc      = step.status === 'pass' ? alpha('#10B981', 0.08) : step.status === 'fail' ? alpha('#EF4444', 0.08) : alpha('#fff', 0.03)
+            const stepNum  = step.name.match(/^Step\s+(\d+)/i)?.[1] ?? String(i + 1)
+            const stepName = step.name.replace(/^Step\s+\d+\s*[—–-]\s*/i, '')
+            const warnings = step.findings.filter(f => f.startsWith('⚠'))
+            const details  = step.findings.filter(f => !f.startsWith('⚠'))
+
+            return (
+              <Box key={i} sx={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+                {/* Left: number + connector line */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 1.5, flexShrink: 0 }}>
+                  <Box sx={{
+                    width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                    bgcolor: step.status === 'skip' ? alpha('#fff', 0.05) : bgc,
+                    border: `1.5px solid ${step.status === 'skip' ? alpha('#fff', 0.1) : sc}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 800, color: step.status === 'skip' ? alpha('#fff', 0.2) : sc }}>
+                      {stepNum}
+                    </Typography>
+                  </Box>
+                  {!isLast && (
+                    <Box sx={{ width: 1.5, flex: 1, minHeight: 8, mt: 0.25, mb: 0.25, bgcolor: step.status === 'pass' ? alpha('#10B981', 0.3) : alpha('#fff', 0.07) }} />
+                  )}
+                </Box>
+
+                {/* Right: content */}
+                <Box sx={{ flex: 1, pb: isLast ? 0 : 1, minWidth: 0 }}>
+                  <Box sx={{ p: 1.25, borderRadius: '10px', bgcolor: bgc, border: `1px solid ${step.status === 'skip' ? alpha('#fff', 0.05) : alpha(sc, 0.2)}`, mb: isLast ? 0 : 0 }}>
+                    {/* Step name row */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography sx={{ flex: 1, fontSize: '0.8125rem', fontWeight: 600, color: step.status === 'skip' ? alpha('#fff', 0.3) : alpha('#fff', 0.85), lineHeight: 1.4 }}>
+                        {stepName}
+                      </Typography>
+                      <Chip
+                        label={step.status === 'pass' ? 'Pass' : step.status === 'fail' ? 'Fail' : 'Blocked'}
+                        size="small"
+                        sx={{ height: 17, fontSize: '0.5rem', fontWeight: 800, bgcolor: alpha(sc, 0.12), color: sc, borderRadius: '4px', flexShrink: 0 }}
+                      />
+                      {step.duration > 0 && (
+                        <Typography sx={{ fontSize: '0.5rem', color: alpha('#fff', 0.18), fontFamily: 'monospace', flexShrink: 0 }}>
+                          {step.duration}ms
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {/* Errors */}
+                    {step.errors.length > 0 && (
+                      <Box sx={{ mt: 0.75, p: 0.875, borderRadius: '7px', bgcolor: alpha('#EF4444', 0.08), border: `1px solid ${alpha('#EF4444', 0.2)}` }}>
+                        {step.errors.map((e, ei) => (
+                          <Box key={ei} sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start' }}>
+                            <XCircle size={11} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+                            <Typography sx={{ fontSize: '0.75rem', color: '#EF4444', fontFamily: 'monospace', lineHeight: 1.5 }}>{e}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* Warnings */}
+                    {warnings.length > 0 && (
+                      <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: 0.3 }}>
+                        {warnings.map((w, wi) => (
+                          <Box key={wi} sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                            <AlertTriangle size={10} color="#F59E0B" style={{ flexShrink: 0 }} />
+                            <Typography sx={{ fontSize: '0.6875rem', color: '#F59E0B', lineHeight: 1.5 }}>{w.replace(/^⚠\s?/, '')}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* Details */}
+                    {details.length > 0 && (
+                      <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.2 }}>
+                        {details.map((d, di) => (
+                          <Box key={di} sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start' }}>
+                            <Info size={10} color={alpha('#fff', 0.2)} style={{ flexShrink: 0, marginTop: 2 }} />
+                            <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.4), lineHeight: 1.5 }}>{d}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
+      </Collapse>
+    </Box>
+  )
+}
+
+// ─── Feature Suite Card ───────────────────────────────────────────────────────
 
 function SuiteCard({ suite }: { suite: Suite }) {
+  // User flow suites get the pipeline view
+  if (suite.name.includes('Flow:') || suite.name.startsWith('🔄')) {
+    return <FlowCard suite={suite} />
+  }
+
   const [open, setOpen] = useState(true)
   const s = suite.summary
   const pct = s.total ? Math.round((s.passed / s.total) * 100) : 0
@@ -204,15 +341,11 @@ function SuiteCard({ suite }: { suite: Suite }) {
 
   return (
     <Box sx={{ borderRadius: '16px', border: '1px solid', borderColor: alpha(color, 0.2), bgcolor: 'background.paper', overflow: 'hidden', mb: 2 }}>
-      {/* Suite header */}
-      <Box
-        onClick={() => setOpen(o => !o)}
-        sx={{
-          px: 2.5, py: 1.75, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5,
-          borderBottom: open ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
-          '&:hover': { bgcolor: alpha('#fff', 0.015) },
-        }}
-      >
+      <Box onClick={() => setOpen(o => !o)} sx={{
+        px: 2.5, py: 1.75, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1.5,
+        borderBottom: open ? `1px solid ${alpha('#fff', 0.05)}` : 'none',
+        '&:hover': { bgcolor: alpha('#fff', 0.015) },
+      }}>
         <Typography sx={{ fontSize: '1.125rem', flexShrink: 0 }}>{suite.icon}</Typography>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -229,21 +362,15 @@ function SuiteCard({ suite }: { suite: Suite }) {
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 0.75, flexShrink: 0 }}>
-          <Chip label={`✓ ${s.passed}`} size="small"
-            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: '5px' }} />
-          {s.failed > 0 && <Chip label={`✗ ${s.failed}`} size="small"
-            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.1), color: '#EF4444', borderRadius: '5px' }} />}
-          {s.skipped > 0 && <Chip label={`~ ${s.skipped}`} size="small"
-            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '5px' }} />}
-          <Chip label={`${(suite.durationMs / 1000).toFixed(1)}s`} size="small"
-            sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.1), color: '#9CA3AF', borderRadius: '5px' }} />
+          <Chip label={`✓ ${s.passed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: '5px' }} />
+          {s.failed > 0 && <Chip label={`✗ ${s.failed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.1), color: '#EF4444', borderRadius: '5px' }} />}
+          {s.skipped > 0 && <Chip label={`~ ${s.skipped}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '5px' }} />}
+          <Chip label={`${(suite.durationMs / 1000).toFixed(1)}s`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.1), color: '#9CA3AF', borderRadius: '5px' }} />
         </Box>
         <Box sx={{ color: alpha('#fff', 0.2), flexShrink: 0 }}>
           {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </Box>
       </Box>
-
-      {/* Steps list */}
       <Collapse in={open}>
         {suite.steps.map((step, i) => <StepRow key={i} step={step} idx={i} />)}
       </Collapse>
