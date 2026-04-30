@@ -301,11 +301,12 @@ export default function App() {
   const [serverOnline, setServerOnline] = useState(false)
   const [liveProgress, setLiveProgress] = useState<{
     currentSuite: string | null
-    currentStep: string | null
-    lastResult: string | null
-    log: string[]
-    steps: { suite: string; step: string; status: string }[]
-    summary: { passed: number; failed: number; skipped: number; total: number }
+    currentStep:  string | null
+    lastResult:   string | null
+    job:          { suite: string; startedAt: string } | null
+    activity:     { type: string; text: string; ts: number }[]
+    steps:        { suite: string; step: string; status: string; error?: string }[]
+    summary:      { passed: number; failed: number; skipped: number; total: number }
   } | null>(null)
 
   const load = useCallback(async () => {
@@ -485,65 +486,112 @@ export default function App() {
           </Box>
         </Box>
 
-        {/* ── Live progress panel ── */}
-        {testRunning && liveProgress && (
-          <Box sx={{ mb: 3, borderRadius: '16px', border: `1px solid ${alpha('#0F5BFF', 0.3)}`, bgcolor: alpha('#0F5BFF', 0.04), overflow: 'hidden' }}>
-            {/* Header */}
-            <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${alpha('#0F5BFF', 0.15)}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Loader size={14} color="#0F5BFF" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }} />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F5BFF' }}>
-                  {liveProgress.currentSuite ?? 'Starting…'}
-                </Typography>
-                {liveProgress.currentStep && (
-                  <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.45), mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    ▸ {liveProgress.currentStep}
-                  </Typography>
-                )}
+        {/* ── Live Agent Activity Panel ── */}
+        {testRunning && (
+          <Box sx={{ mb: 3, borderRadius: '16px', border: `1px solid ${alpha('#0F5BFF', 0.35)}`, bgcolor: '#0D0D14', overflow: 'hidden' }}>
+
+            {/* Top bar */}
+            <Box sx={{ px: 2.5, py: 1.25, background: `linear-gradient(90deg, ${alpha('#0F5BFF', 0.18)}, ${alpha('#0F5BFF', 0.05)})`, borderBottom: `1px solid ${alpha('#0F5BFF', 0.2)}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#EF4444' }} />
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#F59E0B' }} />
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
               </Box>
-              <Box sx={{ display: 'flex', gap: 0.75, flexShrink: 0 }}>
-                <Chip label={`✓ ${liveProgress.summary.passed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.1), color: '#10B981', borderRadius: '5px' }} />
-                {liveProgress.summary.failed > 0 && <Chip label={`✗ ${liveProgress.summary.failed}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.1), color: '#EF4444', borderRadius: '5px' }} />}
-                {liveProgress.summary.skipped > 0 && <Chip label={`~ ${liveProgress.summary.skipped}`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.1), color: '#F59E0B', borderRadius: '5px' }} />}
-                <Chip label={`${liveProgress.summary.total} steps`} size="small" sx={{ height: 18, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.1), color: '#9CA3AF', borderRadius: '5px' }} />
+              <Loader size={12} color="#0F5BFF" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, color: '#0F5BFF', flex: 1 }}>
+                Agent running — {liveProgress?.job?.suite?.replace('.mjs','') ?? 'starting'}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.75 }}>
+                {liveProgress && <>
+                  <Chip label={`✓ ${liveProgress.summary.passed}`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#10B981', 0.12), color: '#10B981', borderRadius: '4px' }} />
+                  {liveProgress.summary.failed > 0 && <Chip label={`✗ ${liveProgress.summary.failed}`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#EF4444', 0.12), color: '#EF4444', borderRadius: '4px' }} />}
+                  {liveProgress.summary.skipped > 0 && <Chip label={`~ ${liveProgress.summary.skipped}`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#F59E0B', 0.12), color: '#F59E0B', borderRadius: '4px' }} />}
+                  <Chip label={`${liveProgress.summary.total} done`} size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 700, bgcolor: alpha('#6B7280', 0.12), color: '#6B7280', borderRadius: '4px' }} />
+                </>}
               </Box>
             </Box>
 
-            {/* Completed steps list */}
-            {liveProgress.steps.length > 0 && (
-              <Box sx={{ maxHeight: 220, overflowY: 'auto', px: 2.5, py: 1 }}>
-                {[...liveProgress.steps].reverse().map((s, i) => {
-                  const color = s.status === 'pass' ? '#10B981' : s.status === 'fail' ? '#EF4444' : '#F59E0B'
-                  const icon  = s.status === 'pass' ? '✓' : s.status === 'fail' ? '✗' : '~'
-                  return (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.4, borderBottom: `1px solid ${alpha('#fff', 0.03)}`, '&:last-child': { borderBottom: 'none' } }}>
-                      <Typography sx={{ fontSize: '0.625rem', fontWeight: 800, color, flexShrink: 0, width: 12 }}>{icon}</Typography>
-                      <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.35), flexShrink: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                        {s.suite}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.6875rem', color: i === 0 ? alpha('#fff', 0.75) : alpha('#fff', 0.45), flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {s.step}
-                      </Typography>
-                    </Box>
-                  )
-                })}
+            {/* Current suite + step */}
+            {liveProgress?.currentSuite && (
+              <Box sx={{ px: 2.5, py: 1, borderBottom: `1px solid ${alpha('#fff', 0.04)}`, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#0F5BFF', flexShrink: 0, boxShadow: `0 0 6px #0F5BFF` }} />
+                <Typography sx={{ fontSize: '0.6875rem', fontWeight: 700, color: alpha('#fff', 0.6) }}>
+                  {liveProgress.currentSuite}
+                </Typography>
+                {liveProgress.currentStep && <>
+                  <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.2) }}>›</Typography>
+                  <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.85), fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {liveProgress.currentStep}
+                  </Typography>
+                </>}
               </Box>
             )}
 
-            {/* Progress bar */}
-            <Box sx={{ px: 2.5, pt: 0.5, pb: 1.5 }}>
-              <LinearProgress variant="indeterminate"
-                sx={{ height: 3, borderRadius: 2, bgcolor: alpha('#0F5BFF', 0.1),
-                  '& .MuiLinearProgress-bar': { bgcolor: '#0F5BFF' } }} />
+            {/* Activity feed — terminal style */}
+            <Box sx={{ px: 2.5, py: 1.5, maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0.3,
+              '&::-webkit-scrollbar': { width: 4 },
+              '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
+              '&::-webkit-scrollbar-thumb': { bgcolor: alpha('#fff', 0.08), borderRadius: 2 },
+            }}>
+              {!liveProgress || liveProgress.activity.length === 0 ? (
+                <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.2), fontFamily: 'monospace' }}>
+                  Waiting for agent output…
+                </Typography>
+              ) : (
+                liveProgress.activity.map((ev, i) => {
+                  const isLast = i === liveProgress.activity.length - 1
+                  if (ev.type === 'suite') return (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: i > 0 ? 0.75 : 0 }}>
+                      <Box sx={{ height: 1, flex: '0 0 12px', bgcolor: alpha('#0F5BFF', 0.4) }} />
+                      <Typography sx={{ fontSize: '0.5625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0F5BFF' }}>{ev.text}</Typography>
+                      <Box sx={{ height: 1, flex: 1, bgcolor: alpha('#0F5BFF', 0.15) }} />
+                    </Box>
+                  )
+                  if (ev.type === 'step') return (
+                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.1 }}>
+                      <Typography sx={{ fontSize: '0.625rem', color: alpha('#fff', 0.25), fontFamily: 'monospace', flexShrink: 0 }}>▸</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', fontWeight: isLast ? 700 : 500, color: isLast ? alpha('#fff', 0.9) : alpha('#fff', 0.45) }}>{ev.text}</Typography>
+                      {isLast && <Box sx={{ width: 6, height: 12, bgcolor: '#0F5BFF', borderRadius: 0.5, flexShrink: 0, animation: 'blink 1s step-end infinite', '@keyframes blink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } } }} />}
+                    </Box>
+                  )
+                  if (ev.type === 'find') return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1, pl: 2, alignItems: 'flex-start' }}>
+                      <Typography sx={{ fontSize: '0.5625rem', color: alpha('#fff', 0.15), fontFamily: 'monospace', flexShrink: 0, mt: 0.1 }}>·</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.3), fontFamily: 'monospace', lineHeight: 1.5, wordBreak: 'break-all' }}>{ev.text}</Typography>
+                    </Box>
+                  )
+                  if (ev.type === 'warn') return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1, pl: 2, alignItems: 'center' }}>
+                      <AlertTriangle size={10} color="#F59E0B" style={{ flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.6875rem', color: '#F59E0B', fontFamily: 'monospace', lineHeight: 1.5 }}>{ev.text}</Typography>
+                    </Box>
+                  )
+                  if (ev.type === 'pass') return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1, pl: 2, alignItems: 'center' }}>
+                      <CheckCircle2 size={11} color="#10B981" style={{ flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.6875rem', color: '#10B981', fontWeight: 700 }}>PASS</Typography>
+                    </Box>
+                  )
+                  if (ev.type === 'fail') return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1, pl: 2, alignItems: 'center' }}>
+                      <XCircle size={11} color="#EF4444" style={{ flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.6875rem', color: '#EF4444', fontWeight: 700 }}>{ev.text}</Typography>
+                    </Box>
+                  )
+                  if (ev.type === 'skip') return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1, pl: 2, alignItems: 'center' }}>
+                      <SkipForward size={11} color="#F59E0B" style={{ flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.6875rem', color: '#F59E0B' }}>{ev.text}</Typography>
+                    </Box>
+                  )
+                  return null
+                })
+              )}
             </Box>
-          </Box>
-        )}
 
-        {/* simple spinner when running but no progress data yet */}
-        {testRunning && !liveProgress && (
-          <Box sx={{ mb: 3, p: 2, borderRadius: '16px', border: `1px solid ${alpha('#0F5BFF', 0.2)}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Loader size={14} color="#0F5BFF" style={{ animation: 'spin 1s linear infinite' }} />
-            <Typography sx={{ fontSize: '0.8125rem', color: alpha('#fff', 0.5) }}>Starting test run…</Typography>
+            {/* Progress bar */}
+            <LinearProgress variant="indeterminate"
+              sx={{ height: 2, bgcolor: alpha('#0F5BFF', 0.08), '& .MuiLinearProgress-bar': { bgcolor: '#0F5BFF' } }} />
           </Box>
         )}
 

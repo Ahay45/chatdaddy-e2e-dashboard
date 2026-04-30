@@ -8,45 +8,61 @@ const ROOT = path.join(__dirname, '..')
 const PORT = 3101
 
 // ── Live progress state ───────────────────────────────────────────────────────
-let running = null         // { pid, suite, startedAt }
+let running = null
 let progress = {
-  currentSuite: null,      // e.g. "Compose & Send"
-  currentStep:  null,      // e.g. "Emoji picker opens"
-  lastResult:   null,      // "pass" | "fail" | "skip"
-  log:          [],        // last 60 lines
-  steps:        [],        // { suite, step, status } completed so far
+  currentSuite: null,
+  currentStep:  null,
+  lastResult:   null,
+  log:          [],        // last 60 raw lines
+  activity:     [],        // last 40 activity events for the dashboard feed
+  steps:        [],        // completed steps { suite, step, status, error }
   passed: 0, failed: 0, skipped: 0, total: 0,
 }
 
 function resetProgress() {
   progress = { currentSuite: null, currentStep: null, lastResult: null,
-    log: [], steps: [], passed: 0, failed: 0, skipped: 0, total: 0 }
+    log: [], activity: [], steps: [], passed: 0, failed: 0, skipped: 0, total: 0 }
+}
+
+function pushActivity(type, text) {
+  progress.activity.push({ type, text, ts: Date.now() })
+  if (progress.activity.length > 40) progress.activity.shift()
 }
 
 function parseLine(line) {
-  // Suite header ━━━  icon  Name
-  const suiteMatch = line.match(/^\s{2}([^\s─]+)\s{2}(.+)$/)
+  // Suite header  ━━━  icon  Name
+  const suiteMatch = line.match(/^\s{2}([^\s─━]+)\s{2}(.+)$/)
   if (line.includes('━━━') && suiteMatch) {
     progress.currentSuite = suiteMatch[2].trim()
     progress.currentStep  = null
+    pushActivity('suite', progress.currentSuite)
     return
   }
-  // Step start:  ▸ Step name
+  // Step start  ▸ Step name
   const stepMatch = line.match(/^\s{2}▸\s+(.+)$/)
   if (stepMatch) {
     progress.currentStep = stepMatch[1].trim()
     progress.lastResult  = null
+    pushActivity('step', progress.currentStep)
     return
   }
-  // Result:  → PASS / FAIL / SKIP
+  // Finding  · text
+  const findMatch = line.match(/^\s{6}·\s+(.+)$/)
+  if (findMatch) { pushActivity('find', findMatch[1].trim()); return }
+  // Warning  ⚠ text
+  const warnMatch = line.match(/^\s{6}⚠\s+(.+)$/)
+  if (warnMatch) { pushActivity('warn', warnMatch[1].trim()); return }
+  // Result  → PASS / FAIL / SKIP
   const passMatch = line.match(/→ PASS/)
   const failMatch = line.match(/→ FAIL:\s*(.+)/)
   const skipMatch = line.match(/→ SKIP:\s*(.+)/)
   if (passMatch || failMatch || skipMatch) {
     const status = passMatch ? 'pass' : failMatch ? 'fail' : 'skip'
+    const error  = failMatch ? failMatch[1].trim() : skipMatch ? skipMatch[1].trim() : null
     progress.lastResult = status
+    pushActivity(status, error || status.toUpperCase())
     if (progress.currentStep) {
-      progress.steps.push({ suite: progress.currentSuite, step: progress.currentStep, status })
+      progress.steps.push({ suite: progress.currentSuite, step: progress.currentStep, status, error })
       if (status === 'pass')  progress.passed++
       if (status === 'fail')  progress.failed++
       if (status === 'skip')  progress.skipped++
@@ -105,11 +121,12 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/api/progress') {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({
-      running: running !== null,
+      running:      running !== null,
+      job:          running,
       currentSuite: progress.currentSuite,
       currentStep:  progress.currentStep,
       lastResult:   progress.lastResult,
-      log:          progress.log.slice(-20),
+      activity:     progress.activity,
       steps:        progress.steps,
       summary:      { passed: progress.passed, failed: progress.failed, skipped: progress.skipped, total: progress.total },
     }))
