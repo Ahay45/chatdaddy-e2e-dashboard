@@ -426,7 +426,7 @@ export default function App() {
         <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid ${alpha('#fff', 0.05)}`, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Terminal size={12} color={alpha('#fff', 0.2)} />
           <Typography sx={{ fontSize: '0.6875rem', color: alpha('#fff', 0.2), fontFamily: 'monospace' }}>
-            npm run e2e  ·  npm run e2e:headless  ·  CD_EMAIL=x CD_PASSWORD=y npm run e2e:save-auth
+            Auto-runs every hour · Pushes live to GitHub Pages
           </Typography>
           <Typography sx={{ ml: 'auto', fontSize: '0.5625rem', color: alpha('#fff', 0.15) }}>
             refreshed {new Date(lastRefresh).toLocaleTimeString()}

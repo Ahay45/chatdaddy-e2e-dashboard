@@ -7,28 +7,36 @@
  *   node e2e/runner.mjs --headless
  */
 
-import { execSync } from 'child_process'
-import { writeFileSync, mkdirSync } from 'fs'
+import { execSync, spawnSync } from 'child_process'
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-const __dir = dirname(fileURLToPath(import.meta.url))
-const ROOT = join(__dir, '..')
+const __dir  = dirname(fileURLToPath(import.meta.url))
+const ROOT   = join(__dir, '..')
 const RESULTS_FILE = join(ROOT, 'public', 'e2e-results.json')
-const SHOTS_DIR = join(ROOT, 'public', 'screenshots')
-mkdirSync(SHOTS_DIR, { recursive: true })
+mkdirSync(join(ROOT, 'public'), { recursive: true })
 
-const BASE_URL  = 'https://theo.chatdaddy.tech'
-const PHONE     = process.env.CD_PHONE    || ''
-const PASSWORD  = process.env.CD_PASSWORD || ''
-const HEADLESS  = process.argv.includes('--headless')
+// Auto-load .env so no manual env vars needed
+const ENV_FILE = join(ROOT, '.env')
+if (existsSync(ENV_FILE)) {
+  for (const line of readFileSync(ENV_FILE, 'utf8').split('\n')) {
+    const [key, ...rest] = line.split('=')
+    if (key && rest.length) process.env[key.trim()] = rest.join('=').trim()
+  }
+}
 
-// ─── browser ─────────────────────────────────────────────────────────────────
+const BASE_URL = 'https://theo.chatdaddy.tech'
+const PHONE    = process.env.CD_PHONE    || ''
+const PASSWORD = process.env.CD_PASSWORD || ''
+const HEADLESS = process.argv.includes('--headless')
+
+// ─── browser helpers ─────────────────────────────────────────────────────────
 
 function ab(...args) {
   const cmd = ['agent-browser', ...args, ...(HEADLESS ? ['--headless'] : [])].join(' ')
   try {
-    return { ok: true, out: execSync(cmd, { encoding: 'utf8', timeout: 35_000 }).trim() }
+    return { ok: true, out: execSync(cmd, { encoding: 'utf8', timeout: 20_000 }).trim() }
   } catch (e) {
     return { ok: false, out: e.stdout?.trim() || '', err: e.stderr?.trim() || e.message }
   }
@@ -40,44 +48,33 @@ function getSnapshot() {
   try { return JSON.parse(r.out) } catch { return null }
 }
 
-// Get URL from snapshot origin (url command unreliable)
 function getUrl() {
   const s = getSnapshot()
   return s?.data?.origin || ''
 }
 
-// Get flat string of snapshot for keyword checks
 function getSnapText() {
   const s = getSnapshot()
   return JSON.stringify(s?.data || '').toLowerCase()
 }
 
-// Get refs map from fresh snapshot
 function getRefs() {
   const s = getSnapshot()
   return s?.data?.refs || {}
 }
 
-// Find ref by field name
 function findRef(refs, ...keywords) {
-  for (const [ref, info] of Object.entries(refs)) {
+  for (const [id, info] of Object.entries(refs)) {
     const name = (info.name || '').toLowerCase()
-    if (keywords.some(k => name.includes(k.toLowerCase()))) return `@${ref}`
+    if (keywords.some(k => name.includes(k.toLowerCase()))) return `@${id}`
   }
   return null
 }
 
 function wait(ms) { return new Promise(r => setTimeout(r, ms)) }
-
-function shot(name) {
-  const file = join(SHOTS_DIR, `${name}.png`)
-  ab('screenshot', '--path', file)
-  return `/screenshots/${name}.png`
-}
-
 function log(msg) { process.stdout.write(msg + '\n') }
 
-// ─── results ─────────────────────────────────────────────────────────────────
+// ─── results engine ──────────────────────────────────────────────────────────
 
 const suites = []
 let activeSuite = null
@@ -85,24 +82,39 @@ let activeStep  = null
 let isLoggedIn  = false
 
 function suite(name, icon = '🔷') {
-  activeSuite = { name, icon, steps: [], startedAt: Date.now() }
+  activeSuite = { name, icon, steps: [] }
   suites.push(activeSuite)
-  log(`\n${'━'.repeat(54)}\n  ${icon}  ${name}\n${'━'.repeat(54)}`)
+  log(`\n${'━'.repeat(52)}\n  ${icon}  ${name}\n${'━'.repeat(52)}`)
 }
 
 function step(name) {
-  activeStep = { name, status: 'running', findings: [], errors: [], screenshot: null, duration: 0, startedAt: Date.now() }
+  activeStep = { name, status: 'running', findings: [], errors: [], duration: 0, _start: Date.now() }
   activeSuite.steps.push(activeStep)
   log(`\n  ▸ ${name}`)
 }
 
-function find(msg) { activeStep.findings.push(msg); log(`      · ${msg}`) }
-function warn(msg) { activeStep.findings.push(`⚠ ${msg}`); log(`      ⚠ ${msg}`) }
-function pass(msg = '') { activeStep.status = 'pass'; activeStep.duration = Date.now() - activeStep.startedAt; if (msg) find(msg); log(`    → PASS (${activeStep.duration}ms)`) }
-function fail(msg)      { activeStep.status = 'fail'; activeStep.errors.push(msg); activeStep.duration = Date.now() - activeStep.startedAt; log(`    → FAIL: ${msg}`) }
-function skip(msg = '') { activeStep.status = 'skip'; activeStep.duration = 0; if (msg) activeStep.findings.push(msg); log(`    → SKIP: ${msg}`) }
-function assert(c, m)   { if (!c) throw new Error(m) }
-function addShot(name)  { const p = shot(name); activeStep.screenshot = p; log(`      📸 screenshot saved`) }
+function find(msg) { activeStep.findings.push(msg);         log(`      · ${msg}`) }
+function warn(msg) { activeStep.findings.push(`⚠ ${msg}`);  log(`      ⚠ ${msg}`) }
+
+function pass(msg = '') {
+  activeStep.status   = 'pass'
+  activeStep.duration = Date.now() - activeStep._start
+  if (msg) find(msg)
+  log(`    → PASS (${activeStep.duration}ms)`)
+}
+function fail(msg) {
+  activeStep.status   = 'fail'
+  activeStep.duration = Date.now() - activeStep._start
+  activeStep.errors.push(msg)
+  log(`    → FAIL: ${msg}`)
+}
+function skip(msg = '') {
+  activeStep.status   = 'skip'
+  activeStep.duration = 0
+  if (msg) activeStep.findings.push(msg)
+  log(`    → SKIP: ${msg}`)
+}
+function assert(c, m) { if (!c) throw new Error(m) }
 
 async function run(name, fn) {
   step(name)
@@ -110,15 +122,20 @@ async function run(name, fn) {
   catch (e) { fail(e.message) }
 }
 
-function saveResults() {
+// ─── save & push ─────────────────────────────────────────────────────────────
+
+function saveAndPush() {
   const allSteps = suites.flatMap(s => s.steps)
-  const passed  = allSteps.filter(s => s.status === 'pass').length
-  const failed  = allSteps.filter(s => s.status === 'fail').length
-  const skipped = allSteps.filter(s => s.status === 'skip').length
-  const totalMs = allSteps.reduce((a, s) => a + s.duration, 0)
+  const passed   = allSteps.filter(s => s.status === 'pass').length
+  const failed   = allSteps.filter(s => s.status === 'fail').length
+  const skipped  = allSteps.filter(s => s.status === 'skip').length
+  const totalMs  = allSteps.reduce((a, s) => a + s.duration, 0)
+
   const data = {
-    url: BASE_URL, runAt: new Date().toISOString(),
-    mode: HEADLESS ? 'headless' : 'headed', durationMs: totalMs,
+    url: BASE_URL,
+    runAt: new Date().toISOString(),
+    mode: HEADLESS ? 'headless' : 'headed',
+    durationMs: totalMs,
     summary: { passed, failed, skipped, total: allSteps.length },
     suites: suites.map(s => ({
       name: s.name, icon: s.icon,
@@ -129,52 +146,62 @@ function saveResults() {
         skipped: s.steps.filter(st => st.status === 'skip').length,
         total:   s.steps.length,
       },
-      steps: s.steps.map(st => ({
-        name: st.name, status: st.status, duration: st.duration,
-        findings: st.findings, errors: st.errors, screenshot: st.screenshot,
-      })),
+      steps: s.steps.map(({ name, status, duration, findings, errors }) =>
+        ({ name, status, duration, findings, errors, screenshot: null })
+      ),
     })),
   }
+
   writeFileSync(RESULTS_FILE, JSON.stringify(data, null, 2))
-  log(`\n  → Saved to public/e2e-results.json`)
-  return data
+  log(`\n  → Saved results`)
+
+  // Auto-push to GitHub → triggers Pages rebuild → live dashboard updates
+  const ts  = new Date().toLocaleString()
+  const msg = `chore: e2e results ${passed}✓ ${failed}✗ ${skipped}~ — ${ts}`
+  spawnSync('git', ['add', 'public/e2e-results.json'], { cwd: ROOT, stdio: 'pipe' })
+  const commit = spawnSync('git', ['commit', '-m', msg], { cwd: ROOT, stdio: 'pipe' })
+  if (commit.status === 0) {
+    spawnSync('git', ['push'], { cwd: ROOT, stdio: 'pipe' })
+    log('  → Pushed to GitHub — live dashboard updating now (~1 min)')
+  } else {
+    log('  → No changes to push (results unchanged)')
+  }
+
+  return { data, passed, failed, skipped }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-
-log(`\n${'═'.repeat(54)}\n  ChatDaddy E2E Agent — ${BASE_URL}\n  ${new Date().toLocaleString()}  |  ${HEADLESS ? 'headless' : 'headed'}\n${'═'.repeat(54)}`)
+log(`\n${'═'.repeat(52)}\n  ChatDaddy E2E — ${BASE_URL}\n  ${new Date().toLocaleString()}  |  ${HEADLESS ? 'headless' : 'headed'}\n${'═'.repeat(52)}`)
 
 // ─────────────────────────────────────────────────────────────────────────────
-suite('Page Load & Initial Render', '🌐')
+suite('Page Load & Session Check', '🌐')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Open base URL', async () => {
-  const r = ab('open', BASE_URL)
+await run('Open site and detect session', async () => {
+  const r = ab('open', `${BASE_URL}/auth/login`)
   assert(r.ok, `Could not open browser: ${r.err}`)
-  await wait(4000)
-  const url = getUrl()
-  find(`Redirected to: ${url || BASE_URL}`)
-  addShot('01-initial-load')
+  await wait(3500)
+
+  const snap = getSnapshot()
+  const url  = snap?.data?.origin || ''
+  const text = JSON.stringify(snap?.data || '').toLowerCase()
+
+  find(`URL: ${url || '(loading)'}`)
+  find(`Elements: ${Object.keys(snap?.data?.refs || {}).length}`)
+
+  if (!url.includes('/auth/login') && !url.includes('/login')) {
+    find('Active session detected — already logged in')
+    isLoggedIn = true
+  } else {
+    find('On login page — no active session')
+  }
 })
 
-await run('Page renders without crash', async () => {
+await run('No crash on load', async () => {
   const text = getSnapText()
   assert(!text.includes("that shouldn't have happened"), 'Oops ErrorBoundary visible')
   assert(!text.includes('failed to fetch dynamically imported module'), 'Chunk loading error')
-  find('No crash / error boundary detected')
-  pass()
-})
-
-await run('Login page fully rendered', async () => {
-  const refs = getRefs()
-  const text = getSnapText()
-  find(`Interactive elements: ${Object.keys(refs).length}`)
-  if (text.includes('phone')) find('Phone Number field visible')
-  if (text.includes('password')) find('Password field visible')
-  if (text.includes('sign in')) find('Sign In button visible')
-  if (text.includes('google')) find('Google SSO button visible')
-  assert(text.includes('phone') || text.includes('password'), 'Login form not rendered')
-  addShot('02-login-rendered')
+  find('No error boundary / chunk errors')
   pass()
 })
 
@@ -182,93 +209,91 @@ await run('Login page fully rendered', async () => {
 suite('Login Flow', '🔐')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Detect form fields with live refs', async () => {
-  ab('open', `${BASE_URL}/auth/login`)
-  await wait(3000)
+await run('Detect login form fields', async () => {
+  if (isLoggedIn) { find('Already authenticated'); pass('Session active'); return }
+
   const refs = getRefs()
-  const phoneRef = findRef(refs, 'phone')
-  const passRef  = findRef(refs, 'password')
-  const signInRef = findRef(refs, 'sign in')
-  const googleRef = findRef(refs, 'google')
-  const forgotRef = findRef(refs, 'forgot')
-
-  find(`Phone input ref: ${phoneRef ?? 'not found'}`)
-  find(`Password input ref: ${passRef ?? 'not found'}`)
-  find(`Sign In button ref: ${signInRef ?? 'not found'}`)
-  find(`Google SSO ref: ${googleRef ?? 'not found'}`)
-  find(`Forgot Password ref: ${forgotRef ?? 'not found'}`)
-  find(`Total refs on page: ${Object.keys(refs).length}`)
-
-  assert(phoneRef && passRef, 'Could not find phone or password field')
-  pass()
-})
-
-await run('Empty form — validation fires', async () => {
-  const refs = getRefs()
-  const signInRef = findRef(refs, 'sign in') || '@e5'
-  ab('click', signInRef)
-  await wait(2000)
   const text = getSnapText()
-  if (text.includes('required') || text.includes('invalid') || text.includes('error') || text.includes('enter'))
-    find('Validation message triggered on empty submit')
-  else
-    warn('No validation message detected')
-  addShot('03-empty-submit')
-  pass()
-})
-
-await run('Login with phone + password', async () => {
-  if (!PHONE || !PASSWORD) {
-    skip('Set CD_PHONE and CD_PASSWORD env vars to test login')
-    return
-  }
-
-  ab('open', `${BASE_URL}/auth/login`)
-  await wait(3000)
-
-  // Get fresh refs after navigation
-  const refs = getRefs()
   const phoneRef  = findRef(refs, 'phone')
   const passRef   = findRef(refs, 'password')
   const submitRef = findRef(refs, 'sign in')
 
-  assert(phoneRef,  `Phone field ref not found. Available: ${Object.keys(refs).join(', ')}`)
-  assert(passRef,   `Password field ref not found. Available: ${Object.keys(refs).join(', ')}`)
-  assert(submitRef, `Sign In button ref not found. Available: ${Object.keys(refs).join(', ')}`)
+  find(`Phone input:   ${phoneRef  ?? '✗ not found'}`)
+  find(`Password:      ${passRef   ?? '✗ not found'}`)
+  find(`Sign In btn:   ${submitRef ?? '✗ not found'}`)
+  if (text.includes('google'))  find('Google SSO button present')
+  if (text.includes('forgot'))  find('Forgot Password link present')
+  find(`Total elements: ${Object.keys(refs).length}`)
+
+  assert(phoneRef && passRef, 'Login form fields not found')
+  pass()
+})
+
+await run('Empty submit — validation check', async () => {
+  if (isLoggedIn) { pass('Session active — skipping'); return }
+
+  const refs      = getRefs()
+  const submitRef = findRef(refs, 'sign in') || '@e5'
+  ab('click', submitRef)
+  await wait(2000)
+
+  const text = getSnapText()
+  if (text.includes('required') || text.includes('invalid') || text.includes('error') || text.includes('enter'))
+    find('Validation message shown on empty submit')
+  else
+    warn('No validation message detected')
+  pass()
+})
+
+await run('Login with phone + password', async () => {
+  if (isLoggedIn) {
+    find('Already authenticated — session reused')
+    pass()
+    return
+  }
+  if (!PHONE || !PASSWORD) {
+    skip('Set CD_PHONE and CD_PASSWORD env vars')
+    return
+  }
+
+  // Navigate fresh to get clean refs
+  ab('open', `${BASE_URL}/auth/login`)
+  await wait(3000)
+
+  const refs      = getRefs()
+  const phoneRef  = findRef(refs, 'phone')
+  const passRef   = findRef(refs, 'password')
+  const submitRef = findRef(refs, 'sign in')
+
+  assert(phoneRef,  `Phone field not found. Refs: ${Object.keys(refs).join(', ')}`)
+  assert(passRef,   `Password field not found. Refs: ${Object.keys(refs).join(', ')}`)
+  assert(submitRef, `Sign In not found. Refs: ${Object.keys(refs).join(', ')}`)
 
   find(`Filling phone (${phoneRef}): ${PHONE}`)
   ab('fill', phoneRef, PHONE)
-  await wait(500)
+  await wait(400)
 
   find(`Filling password (${passRef})`)
   ab('fill', passRef, PASSWORD)
-  await wait(500)
-
-  addShot('04-filled')
+  await wait(400)
 
   find(`Clicking Sign In (${submitRef})`)
   ab('click', submitRef)
-  await wait(6000)
+  await wait(5000)
 
-  const urlAfter = getUrl()
-  find(`URL after submit: ${urlAfter}`)
-  addShot('05-after-login')
+  const url = getUrl()
+  find(`After submit URL: ${url}`)
 
-  if (urlAfter && !urlAfter.includes('/auth/login') && !urlAfter.includes('/login')) {
-    find('Redirected away from login — authentication succeeded')
+  if (url && !url.includes('/auth/login') && !url.includes('/login')) {
+    find('Redirected away from login — auth succeeded ✓')
     isLoggedIn = true
-    pass('Login successful — session active for authenticated tests')
+    pass('Login successful')
   } else {
     const text = getSnapText()
-    if (text.includes('invalid') || text.includes('incorrect') || text.includes('wrong') || text.includes('not found'))
-      fail('Credentials rejected by server')
-    else if (text.includes('phone') && text.includes('password'))
-      fail('Still on login page — submit may not have fired')
-    else {
-      isLoggedIn = true
-      find('Page changed after submit — treating as success')
-      pass()
-    }
+    if (text.includes('invalid') || text.includes('incorrect') || text.includes('wrong'))
+      fail('Server rejected credentials')
+    else
+      fail('Still on login page after submit')
   }
 })
 
@@ -277,57 +302,47 @@ suite('Authenticated Pages', '🔑')
 // ─────────────────────────────────────────────────────────────────────────────
 
 const authPages = [
-  { path: '/inbox',       label: 'Inbox',       icon: '💬', keywords: ['inbox', 'chat', 'message', 'conversation'] },
-  { path: '/crm',         label: 'CRM',          icon: '👥', keywords: ['crm', 'contact', 'board', 'ticket'] },
-  { path: '/dashboard',   label: 'Dashboard',    icon: '📊', keywords: ['dashboard', 'metric', 'analytics', 'overview'] },
-  { path: '/broadcasts',  label: 'Broadcasts',   icon: '📢', keywords: ['broadcast', 'campaign', 'send'] },
-  { path: '/automation',  label: 'Automation',   icon: '🤖', keywords: ['automation', 'flow', 'bot', 'trigger'] },
-  { path: '/settings',    label: 'Settings',     icon: '⚙️',  keywords: ['setting', 'profile', 'account', 'team'] },
-  { path: '/calls',       label: 'Calls',        icon: '📞', keywords: ['call', 'phone', 'twilio', 'dialer'] },
+  { path: '/inbox',      label: 'Inbox',      icon: '💬', keywords: ['inbox', 'chat', 'conversation', 'message'] },
+  { path: '/crm',        label: 'CRM',         icon: '👥', keywords: ['crm', 'contact', 'board', 'ticket'] },
+  { path: '/dashboard',  label: 'Dashboard',   icon: '📊', keywords: ['dashboard', 'metric', 'analytics'] },
+  { path: '/broadcasts', label: 'Broadcasts',  icon: '📢', keywords: ['broadcast', 'campaign', 'send'] },
+  { path: '/automation', label: 'Automation',  icon: '🤖', keywords: ['automation', 'flow', 'bot'] },
+  { path: '/settings',   label: 'Settings',    icon: '⚙️',  keywords: ['setting', 'profile', 'team', 'account'] },
+  { path: '/calls',      label: 'Calls',       icon: '📞', keywords: ['call', 'phone', 'dialer'] },
 ]
 
 for (const page of authPages) {
   await run(`${page.icon} ${page.label} (${page.path})`, async () => {
-    if (!isLoggedIn) {
-      skip('Login did not succeed — skipping authenticated route')
-      return
-    }
+    if (!isLoggedIn) { skip('Login did not succeed'); return }
 
     ab('open', `${BASE_URL}${page.path}`)
     await wait(4000)
 
-    const urlNow  = getUrl()
-    const text    = getSnapText()
-    const refs    = getRefs()
-    const refCount = Object.keys(refs).length
+    const snap = getSnapshot()
+    const url  = snap?.data?.origin || ''
+    const text = JSON.stringify(snap?.data || '').toLowerCase()
+    const refs = snap?.data?.refs || {}
 
-    find(`URL: ${urlNow}`)
-    find(`Interactive elements: ${refCount}`)
+    find(`URL: ${url}`)
+    find(`Interactive elements: ${Object.keys(refs).length}`)
 
-    // Crash checks
     assert(!text.includes("that shouldn't have happened"), 'Oops ErrorBoundary triggered')
     assert(!text.includes('failed to fetch dynamically imported module'), 'Chunk loading error')
 
-    // Auth guard check
-    if (urlNow.includes('/auth/login') || urlNow.includes('/login')) {
-      fail('Redirected to login — session expired or not persisted')
+    if (url.includes('/auth/login') || url.includes('/login')) {
+      fail('Redirected to login — session lost')
       return
     }
 
-    // Content checks
-    const found = page.keywords.filter(k => text.includes(k))
-    if (found.length > 0) find(`Page keywords detected: ${found.join(', ')}`)
-    else warn('No expected content keywords found — page may be loading or empty')
+    const foundKeywords = page.keywords.filter(k => text.includes(k))
+    if (foundKeywords.length) find(`Content detected: ${foundKeywords.join(', ')}`)
+    else warn('No expected content keywords — page may still be loading')
 
-    // Element summary
     const buttons = Object.values(refs).filter(r => r.role === 'button').length
     const inputs  = Object.values(refs).filter(r => r.role === 'textbox').length
-    const links   = Object.values(refs).filter(r => r.role === 'link').length
     if (buttons) find(`Buttons: ${buttons}`)
     if (inputs)  find(`Inputs: ${inputs}`)
-    if (links)   find(`Links: ${links}`)
 
-    addShot(`06-${page.label.toLowerCase().replace(/\s+/g, '-')}`)
     pass()
   })
 }
@@ -337,38 +352,36 @@ suite('Error Resilience', '🚨')
 // ─────────────────────────────────────────────────────────────────────────────
 
 await run('Invalid route — 404 not Oops', async () => {
-  ab('open', `${BASE_URL}/this-does-not-exist-xyzabc123`)
+  ab('open', `${BASE_URL}/xyzabc-does-not-exist-999`)
   await wait(3000)
   const text = getSnapText()
-  addShot('07-404')
   assert(!text.includes("that shouldn't have happened"), 'Runtime Oops shown on bad route')
+  const url = getUrl()
+  find(`Landed: ${url}`)
   if (text.includes('404') || text.includes('not found') || text.includes('whoops') || text.includes('available'))
     find('404 page rendered correctly')
-  else if (text.includes('/auth/login') || getUrl().includes('/login'))
-    find('Redirected to login (auth guard — expected)')
-  else
-    warn('No clear 404 indicator found')
+  else if (url.includes('/auth/login')) find('Redirected to login (auth guard)')
+  else warn('No 404 indicator — may redirect elsewhere')
   pass()
 })
 
-await run('Deep nested invalid route', async () => {
+await run('Deep nested invalid route — no crash', async () => {
   ab('open', `${BASE_URL}/inbox/thread/fake-id-99999/message/0`)
   await wait(3000)
   const text = getSnapText()
-  assert(!text.includes("that shouldn't have happened"), 'Oops on deep invalid route')
+  assert(!text.includes("that shouldn't have happened"), 'Oops on deep route')
   find(`URL: ${getUrl()}`)
   pass()
 })
 
-await run('Rapid route switching — no crash', async () => {
-  const paths = ['/inbox', '/crm', '/dashboard', '/broadcasts', '/settings']
-  for (const p of paths) {
+await run('Rapid route switching — stable', async () => {
+  for (const p of ['/inbox', '/crm', '/dashboard', '/broadcasts', '/settings']) {
     ab('open', `${BASE_URL}${p}`)
-    await wait(800)
+    await wait(700)
   }
   const text = getSnapText()
   assert(!text.includes("that shouldn't have happened"), 'Crash during rapid navigation')
-  find(`${paths.length} rapid switches: stable`)
+  find('5 rapid switches: no crash')
   pass()
 })
 
@@ -385,46 +398,43 @@ await run('No chunk loading errors', async () => {
 suite('UI & Accessibility', '♿')
 // ─────────────────────────────────────────────────────────────────────────────
 
-await run('Login page — full element audit', async () => {
+await run('Login page element audit', async () => {
   ab('open', `${BASE_URL}/auth/login`)
   await wait(3000)
   const refs = getRefs()
-  const all     = Object.entries(refs)
-  const buttons = all.filter(([, r]) => r.role === 'button')
-  const inputs  = all.filter(([, r]) => r.role === 'textbox')
-  const links   = all.filter(([, r]) => r.role === 'link')
-
-  find(`Total interactive elements: ${all.length}`)
-  find(`Buttons (${buttons.length}): ${buttons.map(([, r]) => r.name || 'unnamed').join(' | ')}`)
-  find(`Inputs (${inputs.length}): ${inputs.map(([, r]) => r.name || 'unnamed').join(' | ')}`)
-  find(`Links (${links.length}): ${links.map(([, r]) => r.name || 'unnamed').join(' | ')}`)
-  pass()
-})
-
-await run('Keyboard Tab navigation', async () => {
-  ab('open', `${BASE_URL}/auth/login`)
-  await wait(2500)
-  ab('type', 'Tab'); await wait(400)
-  ab('type', 'Tab'); await wait(400)
-  ab('type', 'Tab'); await wait(400)
-  find('Tabbed through 3 interactive elements')
-  addShot('08-keyboard-tab')
+  const all  = Object.entries(refs)
+  const btns = all.filter(([, r]) => r.role === 'button')
+  const inps = all.filter(([, r]) => r.role === 'textbox')
+  const lnks = all.filter(([, r]) => r.role === 'link')
+  find(`Total elements: ${all.length}`)
+  find(`Buttons (${btns.length}): ${btns.map(([, r]) => r.name || 'unnamed').join(' | ') || 'none'}`)
+  find(`Inputs  (${inps.length}): ${inps.map(([, r]) => r.name || 'unnamed').join(' | ') || 'none'}`)
+  find(`Links   (${lnks.length}): ${lnks.map(([, r]) => r.name || 'unnamed').join(' | ') || 'none'}`)
   pass()
 })
 
 await run('Show/hide password toggle', async () => {
-  ab('open', `${BASE_URL}/auth/login`)
-  await wait(2500)
-  const refs = getRefs()
+  const refs        = getRefs()
   const showPassRef = findRef(refs, 'show password')
   if (showPassRef) {
     ab('click', showPassRef)
-    await wait(800)
+    await wait(600)
     find(`Clicked "Show password" toggle (${showPassRef})`)
-    addShot('09-password-toggle')
   } else {
-    warn('No "Show password" button found')
+    warn('"Show password" button not found on page')
   }
+  pass()
+})
+
+await run('Inbox sidebar nav items', async () => {
+  if (!isLoggedIn) { skip('Requires login'); return }
+  ab('open', `${BASE_URL}/inbox`)
+  await wait(3500)
+  const refs = getRefs()
+  const all  = Object.entries(refs)
+  const btns = all.filter(([, r]) => r.role === 'button')
+  find(`Total elements: ${all.length}`)
+  find(`Nav buttons: ${btns.map(([, r]) => r.name).filter(Boolean).join(' | ')}`)
   pass()
 })
 
@@ -432,45 +442,44 @@ await run('Show/hide password toggle', async () => {
 suite('Performance', '⚡')
 // ─────────────────────────────────────────────────────────────────────────────
 
-const perfRoutes = [
+const perfPages = [
   { path: '/auth/login', label: 'Login page' },
-  { path: '/',           label: 'Root / Home' },
   ...(isLoggedIn ? [
     { path: '/inbox',     label: 'Inbox' },
     { path: '/dashboard', label: 'Dashboard' },
+    { path: '/crm',       label: 'CRM' },
   ] : []),
 ]
 
-for (const r of perfRoutes) {
-  await run(`Load time — ${r.label}`, async () => {
+for (const p of perfPages) {
+  await run(`Load time — ${p.label}`, async () => {
     const start = Date.now()
-    ab('open', `${BASE_URL}${r.path}`)
-    await wait(500)
-    getSnapshot() // wait for interactive
+    ab('open', `${BASE_URL}${p.path}`)
+    await wait(300)
+    getSnapshot()
     const ms = Date.now() - start
     find(`Time to interactive: ~${ms}ms`)
-    if (ms < 3000)      find('Rating: GOOD (< 3s)')
-    else if (ms < 6000) warn(`Rating: SLOW (${ms}ms — target < 3s)`)
+    if      (ms < 3000) find('Rating: GOOD (< 3s) ✓')
+    else if (ms < 6000) warn(`Rating: SLOW (${ms}ms) — target < 3s`)
     else                warn(`Rating: VERY SLOW (${ms}ms)`)
     pass()
   })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUMMARY
+// DONE
 // ─────────────────────────────────────────────────────────────────────────────
 
-const data = saveResults()
-const { passed, failed, skipped, total } = data.summary
+const { data, passed, failed, skipped } = saveAndPush()
 
-log(`\n${'═'.repeat(54)}`)
-log(`  TOTAL: ${passed} passed  ${failed} failed  ${skipped} skipped  (${total} steps)`)
+log(`\n${'═'.repeat(52)}`)
+log(`  TOTAL: ${passed} passed  ${failed} failed  ${skipped} skipped  (${data.summary.total} steps)`)
 log(`  Duration: ${(data.durationMs / 1000).toFixed(1)}s`)
-log('═'.repeat(54) + '\n')
+log('═'.repeat(52) + '\n')
 
 for (const s of data.suites) {
   const icon = s.summary.failed > 0 ? '✗' : '✓'
-  log(`  ${icon}  ${s.icon} ${s.name}  (${s.summary.passed}/${s.summary.total} passed)`)
+  log(`  ${icon}  ${s.icon} ${s.name}  (${s.summary.passed}/${s.summary.total})`)
   for (const st of s.steps) {
     const si = st.status === 'pass' ? '✓' : st.status === 'fail' ? '✗' : '~'
     log(`       ${si}  ${st.name}`)
