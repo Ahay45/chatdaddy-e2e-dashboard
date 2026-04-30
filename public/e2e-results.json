@@ -1,15 +1,343 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-04-30T06:26:47.485Z",
+  "runAt": "2026-04-30T06:40:02.238Z",
   "mode": "headed",
   "durationMs": 70556,
   "summary": {
-    "passed": 23,
+    "passed": 52,
     "failed": 0,
     "skipped": 0,
-    "total": 23
+    "total": 52
   },
   "suites": [
+    {
+      "name": "📬 Inbox Module",
+      "icon": "📬",
+      "durationMs": 109050,
+      "summary": {
+        "passed": 29,
+        "failed": 0,
+        "skipped": 0,
+        "total": 29
+      },
+      "steps": [
+        {
+          "name": "Inbox page loads without crash",
+          "status": "pass",
+          "duration": 379,
+          "findings": [
+            "URL: https://theo.chatdaddy.tech/inbox/"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Sidebar navigation visible",
+          "status": "pass",
+          "duration": 378,
+          "findings": [
+            "Nav items detected: inbox, contacts, channels, calls, automation, marketing"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Conversation list renders",
+          "status": "pass",
+          "duration": 192,
+          "findings": [
+            "Conversation rows detected: ~30"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Search bar present",
+          "status": "pass",
+          "duration": 186,
+          "findings": [
+            "Search ref: @e50"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Total interactive elements count",
+          "status": "pass",
+          "duration": 191,
+          "findings": [
+            "Total: 151 elements",
+            "Buttons: 88",
+            "Inputs: 1",
+            "Links: 0"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Unread\"",
+          "status": "pass",
+          "duration": 2760,
+          "findings": [
+            "Found ref: @e10",
+            "Elements after click: 152"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Assigned to Me\"",
+          "status": "pass",
+          "duration": 2715,
+          "findings": [
+            "Found ref: @e11",
+            "Elements after click: 32"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Unassigned\"",
+          "status": "pass",
+          "duration": 2725,
+          "findings": [
+            "Found ref: @e12",
+            "Elements after click: 151"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Individuals\"",
+          "status": "pass",
+          "duration": 2740,
+          "findings": [
+            "Found ref: @e13",
+            "Elements after click: 151"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Groups\"",
+          "status": "pass",
+          "duration": 2740,
+          "findings": [
+            "Found ref: @e14",
+            "Elements after click: 152"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Filter tab: \"Archived\"",
+          "status": "pass",
+          "duration": 2750,
+          "findings": [
+            "Found ref: @e15",
+            "Elements after click: 134"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Search bar is clickable & focusable",
+          "status": "pass",
+          "duration": 4910,
+          "findings": [
+            "Clicked search (@e20)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Type in search — results update",
+          "status": "pass",
+          "duration": 2514,
+          "findings": [
+            "Typed \"test\" — no crash"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Clear search restores list",
+          "status": "pass",
+          "duration": 3022,
+          "findings": [
+            "Cleared search — list restored"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Expand filters button",
+          "status": "pass",
+          "duration": 5710,
+          "findings": [
+            "Filter ref: @e2",
+            "Filter panel expanded"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Assignee filter",
+          "status": "pass",
+          "duration": 2721,
+          "findings": [
+            "Clicked Assignee filter (@e141)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Tags filter",
+          "status": "pass",
+          "duration": 173,
+          "findings": [
+            "⚠ Tags filter not visible",
+            "Not in view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Date Range filter",
+          "status": "pass",
+          "duration": 170,
+          "findings": [
+            "⚠ Date Range filter not visible",
+            "Not in view"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Open first conversation",
+          "status": "pass",
+          "duration": 7363,
+          "findings": [
+            "Assign ref: @e11",
+            "More ref: not found",
+            "Clicking first item in conversation list",
+            "URL: https://theo.chatdaddy.tech/inbox/"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Assign button on conversation row",
+          "status": "pass",
+          "duration": 7102,
+          "findings": [
+            "Clicked Assign (@e102)",
+            "Elements after click: 152"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "More (⋯) menu on conversation row",
+          "status": "pass",
+          "duration": 7058,
+          "findings": [
+            "Clicked More (@e100)",
+            "Menu items detected: mark, archive"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Bulk select button visible",
+          "status": "pass",
+          "duration": 7521,
+          "findings": [
+            "Bulk select ref: @e7",
+            "Bulk select mode activated",
+            "Select-all option appeared"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Expand/collapse sidebar",
+          "status": "pass",
+          "duration": 7503,
+          "findings": [
+            "Sidebar toggle ref: @e8",
+            "Sidebar collapsed — no crash",
+            "Sidebar re-expanded"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Notifications button",
+          "status": "pass",
+          "duration": 6906,
+          "findings": [
+            "Clicked Notifications (@e47)",
+            "Notifications panel/dropdown opened"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Settings button (inbox settings)",
+          "status": "pass",
+          "duration": 172,
+          "findings": [
+            "⚠ Settings button not found",
+            "Not visible"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Getting Started button",
+          "status": "pass",
+          "duration": 6677,
+          "findings": [
+            "Clicked Getting Started (@e21)"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Analytics button",
+          "status": "pass",
+          "duration": 12263,
+          "findings": [
+            "Clicked Analytics (@e122)",
+            "URL: https://theo.chatdaddy.tech/analytics"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "Inbox load time",
+          "status": "pass",
+          "duration": 1361,
+          "findings": [
+            "Time to interactive: ~1361ms",
+            "Rating: GOOD (< 3s) ✓"
+          ],
+          "errors": [],
+          "screenshot": null
+        },
+        {
+          "name": "No crash switching between filter tabs rapidly",
+          "status": "pass",
+          "duration": 8148,
+          "findings": [
+            "Rapidly switched 5 filter tabs — stable"
+          ],
+          "errors": [],
+          "screenshot": null
+        }
+      ]
+    },
     {
       "name": "Page Load & Session Check",
       "icon": "🌐",
