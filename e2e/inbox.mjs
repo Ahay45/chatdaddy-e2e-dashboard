@@ -198,9 +198,38 @@ function saveAndPush() {
   return { passed, failed, skipped, total: allSteps.length, totalMs, data }
 }
 
+const PHONE    = process.env.CD_PHONE    || ''
+const PASSWORD = process.env.CD_PASSWORD || ''
+
+async function ensureLoggedIn() {
+  ab('open', `${BASE_URL}/inbox`)
+  await wait(4000)
+  const url = getUrl()
+  if (!url.includes('/auth/login') && !url.includes('/login')) {
+    log('  ✓ Already logged in')
+    return
+  }
+  log('  → Not logged in, attempting login...')
+  ab('open', `${BASE_URL}/auth/login`)
+  await wait(3000)
+  const refs = getRefs()
+  const phoneRef  = findRef(refs, 'phone')
+  const passRef   = findRef(refs, 'password')
+  const submitRef = findRef(refs, 'sign in')
+  if (!phoneRef || !submitRef) throw new Error('Login form not found')
+  ab('fill', phoneRef, PHONE)
+  if (passRef) ab('fill', passRef, PASSWORD)
+  ab('click', submitRef)
+  await wait(5000)
+  const afterUrl = getUrl()
+  if (afterUrl.includes('/auth/login') || afterUrl.includes('/login')) throw new Error('Login failed — still on login page')
+  log('  ✓ Login successful')
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 log(`\n${'═'.repeat(60)}\n  ChatDaddy — Inbox Full Feature Test\n  ${new Date().toLocaleString()}\n${'═'.repeat(60)}`)
 
+await ensureLoggedIn()
 ab('open', `${BASE_URL}/inbox`)
 await wait(4000)
 
