@@ -1,8 +1,8 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-05-04T08:37:43.106Z",
+  "runAt": "2026-05-04T09:38:58.346Z",
   "mode": "headless",
-  "durationMs": 73654,
+  "durationMs": 73108,
   "summary": {
     "passed": 23,
     "failed": 0,
@@ -13,7 +13,7 @@
     {
       "name": "Page Load & Session Check",
       "icon": "🌐",
-      "durationMs": 6728,
+      "durationMs": 5574,
       "summary": {
         "passed": 2,
         "failed": 0,
@@ -24,7 +24,7 @@
         {
           "name": "Open site and detect session",
           "status": "pass",
-          "duration": 6472,
+          "duration": 5339,
           "findings": [
             "URL: https://theo.chatdaddy.tech/inbox",
             "Elements: 141",
@@ -36,7 +36,7 @@
         {
           "name": "No crash on load",
           "status": "pass",
-          "duration": 256,
+          "duration": 235,
           "findings": [
             "No error boundary / chunk errors"
           ],
@@ -48,7 +48,7 @@
     {
       "name": "Login Flow",
       "icon": "🔐",
-      "durationMs": 0,
+      "durationMs": 1,
       "summary": {
         "passed": 3,
         "failed": 0,
@@ -59,7 +59,7 @@
         {
           "name": "Detect login form fields",
           "status": "pass",
-          "duration": 0,
+          "duration": 1,
           "findings": [
             "Already authenticated",
             "Session active"
@@ -92,7 +92,7 @@
     {
       "name": "Authenticated Pages",
       "icon": "🔑",
-      "durationMs": 34261,
+      "durationMs": 34525,
       "summary": {
         "passed": 7,
         "failed": 0,
@@ -103,7 +103,7 @@
         {
           "name": "💬 Inbox (/inbox)",
           "status": "pass",
-          "duration": 4890,
+          "duration": 4972,
           "findings": [
             "URL: https://theo.chatdaddy.tech/inbox/",
             "Interactive elements: 141",
@@ -117,7 +117,7 @@
         {
           "name": "👥 CRM (/crm)",
           "status": "pass",
-          "duration": 4862,
+          "duration": 4899,
           "findings": [
             "URL: https://theo.chatdaddy.tech/crm/",
             "Interactive elements: 159",
@@ -131,7 +131,7 @@
         {
           "name": "📊 Dashboard (/dashboard)",
           "status": "pass",
-          "duration": 4997,
+          "duration": 4894,
           "findings": [
             "URL: https://theo.chatdaddy.tech/dashboard/",
             "Interactive elements: 48",
@@ -144,7 +144,7 @@
         {
           "name": "📢 Broadcasts (/broadcasts)",
           "status": "pass",
-          "duration": 4924,
+          "duration": 4973,
           "findings": [
             "URL: https://theo.chatdaddy.tech/broadcasts/",
             "Interactive elements: 431",
@@ -158,7 +158,7 @@
         {
           "name": "🤖 Automation (/automation)",
           "status": "pass",
-          "duration": 4871,
+          "duration": 4948,
           "findings": [
             "URL: https://theo.chatdaddy.tech/automation/",
             "Interactive elements: 1",
@@ -170,7 +170,7 @@
         {
           "name": "⚙️ Settings (/settings)",
           "status": "pass",
-          "duration": 4818,
+          "duration": 4891,
           "findings": [
             "URL: https://theo.chatdaddy.tech/settings/",
             "Interactive elements: 34",
@@ -183,7 +183,7 @@
         {
           "name": "📞 Calls (/calls)",
           "status": "pass",
-          "duration": 4899,
+          "duration": 4948,
           "findings": [
             "URL: https://theo.chatdaddy.tech/calls/",
             "Interactive elements: 99",
@@ -199,7 +199,7 @@
     {
       "name": "Error Resilience",
       "icon": "🚨",
-      "durationMs": 19522,
+      "durationMs": 19654,
       "summary": {
         "passed": 4,
         "failed": 0,
@@ -210,7 +210,7 @@
         {
           "name": "Invalid route — 404 not Oops",
           "status": "pass",
-          "duration": 3967,
+          "duration": 4053,
           "findings": [
             "Landed: https://theo.chatdaddy.tech/xyzabc-does-not-exist-999/",
             "404 page rendered correctly"
@@ -221,7 +221,7 @@
         {
           "name": "Deep nested invalid route — no crash",
           "status": "pass",
-          "duration": 4252,
+          "duration": 4189,
           "findings": [
             "URL: https://theo.chatdaddy.tech/inbox/thread/fake-id-99999/message/0/"
           ],
@@ -231,7 +231,7 @@
         {
           "name": "Rapid route switching — stable",
           "status": "pass",
-          "duration": 7131,
+          "duration": 7143,
           "findings": [
             "5 rapid switches: no crash"
           ],
@@ -241,7 +241,7 @@
         {
           "name": "No chunk loading errors",
           "status": "pass",
-          "duration": 4172,
+          "duration": 4269,
           "findings": [
             "No chunk loading errors on reload"
           ],
@@ -253,7 +253,7 @@
     {
       "name": "UI & Accessibility",
       "icon": "♿",
-      "durationMs": 8477,
+      "durationMs": 8583,
       "summary": {
         "passed": 3,
         "failed": 0,
@@ -264,7 +264,7 @@
         {
           "name": "Login page element audit",
           "status": "pass",
-          "duration": 3891,
+          "duration": 3935,
           "findings": [
             "Total elements: 141",
             "Buttons (88): Unread | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assigned to Me | Assign | More | Assign | More | Getting Started | Analytics | Inbox | Contacts | Channels | Calls | Unassigned | Automation | Marketing | Tools | AI | App Store | Shops | Individuals | Groups | Archived | Expand filters | Channels | Assignee | Notifications | Settings | Admin | Tags | Assign | More | Assign | More | Assign | More | Assign | More | Date Range | Assign | More | Assign | More | Assign | More | Assign | More | Assign | Bulk select | More | Assign | More | Assign | More | Assign | More | Assign | More | Expand sidebar | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More",
@@ -277,7 +277,7 @@
         {
           "name": "Show/hide password toggle",
           "status": "pass",
-          "duration": 222,
+          "duration": 277,
           "findings": [
             "⚠ \"Show password\" button not found on page"
           ],
@@ -287,7 +287,7 @@
         {
           "name": "Inbox sidebar nav items",
           "status": "pass",
-          "duration": 4364,
+          "duration": 4371,
           "findings": [
             "Total elements: 141",
             "Nav buttons: Unread | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assigned to Me | Assign | More | Assign | More | Getting Started | Analytics | Inbox | Contacts | Channels | Calls | Unassigned | Automation | Marketing | Tools | AI | App Store | Shops | Individuals | Groups | Archived | Expand filters | Channels | Assignee | Notifications | Settings | Admin | Tags | Assign | More | Assign | More | Assign | More | Assign | More | Date Range | Assign | More | Assign | More | Assign | More | Assign | More | Assign | Bulk select | More | Assign | More | Assign | More | Assign | More | Assign | More | Expand sidebar | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More | Assign | More"
@@ -300,7 +300,7 @@
     {
       "name": "Performance",
       "icon": "⚡",
-      "durationMs": 4666,
+      "durationMs": 4771,
       "summary": {
         "passed": 4,
         "failed": 0,
@@ -311,9 +311,9 @@
         {
           "name": "Load time — Login page",
           "status": "pass",
-          "duration": 1257,
+          "duration": 1135,
           "findings": [
-            "Time to interactive: ~1256ms",
+            "Time to interactive: ~1135ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
@@ -322,9 +322,9 @@
         {
           "name": "Load time — Inbox",
           "status": "pass",
-          "duration": 1100,
+          "duration": 1176,
           "findings": [
-            "Time to interactive: ~1100ms",
+            "Time to interactive: ~1176ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
@@ -333,9 +333,9 @@
         {
           "name": "Load time — Dashboard",
           "status": "pass",
-          "duration": 1114,
+          "duration": 1236,
           "findings": [
-            "Time to interactive: ~1114ms",
+            "Time to interactive: ~1236ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
@@ -344,9 +344,9 @@
         {
           "name": "Load time — CRM",
           "status": "pass",
-          "duration": 1195,
+          "duration": 1224,
           "findings": [
-            "Time to interactive: ~1194ms",
+            "Time to interactive: ~1224ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
