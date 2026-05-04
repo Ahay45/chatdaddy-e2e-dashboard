@@ -1,11 +1,11 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-05-04T07:44:56.247Z",
+  "runAt": "2026-05-04T07:51:01.122Z",
   "mode": "headless",
   "durationMs": 45492,
   "summary": {
-    "passed": 73,
-    "failed": 8,
+    "passed": 80,
+    "failed": 1,
     "skipped": 8,
     "total": 89
   },
@@ -13,24 +13,22 @@
     {
       "name": "📬 Inbox Module",
       "icon": "📬",
-      "durationMs": 101691,
+      "durationMs": 264768,
       "summary": {
-        "passed": 62,
-        "failed": 7,
+        "passed": 69,
+        "failed": 0,
         "skipped": 0,
         "total": 69
       },
       "steps": [
         {
           "name": "Inbox page loads without crash",
-          "status": "fail",
-          "duration": 393,
+          "status": "pass",
+          "duration": 475,
           "findings": [
-            "URL: https://theo.chatdaddy.tech/auth/login"
+            "URL: https://theo.chatdaddy.tech/inbox/"
           ],
-          "errors": [
-            "Not on inbox — landed on: https://theo.chatdaddy.tech/auth/login"
-          ],
+          "errors": [],
           "userSteps": [
             "Open browser → Go to /inbox URL"
           ],
@@ -38,14 +36,12 @@
         },
         {
           "name": "Sidebar navigation visible",
-          "status": "fail",
-          "duration": 193,
+          "status": "pass",
+          "duration": 266,
           "findings": [
-            "Nav items: "
+            "Nav items: inbox, contacts, channels, calls, automation, marketing"
           ],
-          "errors": [
-            "Too few nav items: "
-          ],
+          "errors": [],
           "userSteps": [
             "Look at the left sidebar → Confirm Inbox, Contacts, Channels links are shown"
           ],
@@ -53,14 +49,12 @@
         },
         {
           "name": "Conversation list renders",
-          "status": "fail",
-          "duration": 189,
+          "status": "pass",
+          "duration": 252,
           "findings": [
-            "Conversation rows (Assign buttons): 0"
+            "Conversation rows (Assign buttons): 30"
           ],
-          "errors": [
-            "No conversations found in inbox"
-          ],
+          "errors": [],
           "userSteps": [
             "Open Inbox → Verify chat list appears with conversation rows"
           ],
@@ -68,14 +62,12 @@
         },
         {
           "name": "Search bar present",
-          "status": "fail",
-          "duration": 180,
+          "status": "pass",
+          "duration": 229,
           "findings": [
-            "Search ref: not found"
+            "Search ref: @e50"
           ],
-          "errors": [
-            "Search bar not found"
-          ],
+          "errors": [],
           "userSteps": [
             "Look at top of inbox → Find the search input field"
           ],
@@ -84,11 +76,11 @@
         {
           "name": "Inbox top-bar controls visible",
           "status": "pass",
-          "duration": 208,
+          "duration": 254,
           "findings": [
-            "Total interactive elements: 12",
-            "Buttons: 5",
-            "Inputs: 2"
+            "Total interactive elements: 141",
+            "Buttons: 88",
+            "Inputs: 1"
           ],
           "errors": [],
           "userSteps": [
@@ -99,10 +91,10 @@
         {
           "name": "Tab: \"Unread\"",
           "status": "pass",
-          "duration": 3845,
+          "duration": 6759,
           "findings": [
-            "⚠ \"Unread\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e10",
+            "Elements after: 151"
           ],
           "errors": [],
           "userSteps": [
@@ -113,10 +105,10 @@
         {
           "name": "Tab: \"Assigned to Me\"",
           "status": "pass",
-          "duration": 3870,
+          "duration": 6912,
           "findings": [
-            "⚠ \"Assigned to Me\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e11",
+            "Elements after: 32"
           ],
           "errors": [],
           "userSteps": [
@@ -127,10 +119,10 @@
         {
           "name": "Tab: \"Unassigned\"",
           "status": "pass",
-          "duration": 3825,
+          "duration": 6493,
           "findings": [
-            "⚠ \"Unassigned\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e12",
+            "Elements after: 135"
           ],
           "errors": [],
           "userSteps": [
@@ -141,10 +133,10 @@
         {
           "name": "Tab: \"Individuals\"",
           "status": "pass",
-          "duration": 3826,
+          "duration": 6584,
           "findings": [
-            "⚠ \"Individuals\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e13",
+            "Elements after: 139"
           ],
           "errors": [],
           "userSteps": [
@@ -155,10 +147,10 @@
         {
           "name": "Tab: \"Groups\"",
           "status": "pass",
-          "duration": 3830,
+          "duration": 46153,
           "findings": [
-            "⚠ \"Groups\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e14",
+            "Elements after: 0"
           ],
           "errors": [],
           "userSteps": [
@@ -169,10 +161,10 @@
         {
           "name": "Tab: \"Archived\"",
           "status": "pass",
-          "duration": 3867,
+          "duration": 25865,
           "findings": [
-            "⚠ \"Archived\" tab not found",
-            "Tab not present in this account"
+            "Ref: @e15",
+            "Elements after: 32"
           ],
           "errors": [],
           "userSteps": [
@@ -182,12 +174,12 @@
         },
         {
           "name": "Search bar focusable",
-          "status": "fail",
-          "duration": 3882,
-          "findings": [],
-          "errors": [
-            "Search input not found"
+          "status": "pass",
+          "duration": 4801,
+          "findings": [
+            "Clicked: @e50"
           ],
+          "errors": [],
           "userSteps": [
             "Open Inbox → Click on the search bar at the top"
           ],
@@ -195,12 +187,12 @@
         },
         {
           "name": "Type query — list updates without crash",
-          "status": "fail",
-          "duration": 171,
-          "findings": [],
-          "errors": [
-            "Search input not found"
+          "status": "pass",
+          "duration": 2770,
+          "findings": [
+            "Typed \"test\" — stable"
           ],
+          "errors": [],
           "userSteps": [
             "Click search bar → Type a keyword → Verify conversation list filters in real-time"
           ],
@@ -209,7 +201,7 @@
         {
           "name": "Clear search restores full list",
           "status": "pass",
-          "duration": 1339,
+          "duration": 2542,
           "findings": [
             "Search cleared"
           ],
@@ -222,7 +214,7 @@
         {
           "name": "Team inbox switcher",
           "status": "pass",
-          "duration": 3760,
+          "duration": 3912,
           "findings": [
             "⚠ Team inbox switcher not found",
             "Not visible"
@@ -236,7 +228,7 @@
         {
           "name": "Sort order (newest / oldest)",
           "status": "pass",
-          "duration": 169,
+          "duration": 213,
           "findings": [
             "⚠ Sort control not found",
             "Not visible"
@@ -250,7 +242,7 @@
         {
           "name": "Channel filter (WhatsApp / Facebook / etc.)",
           "status": "pass",
-          "duration": 170,
+          "duration": 202,
           "findings": [
             "⚠ Channel filter not found",
             "Not visible"
@@ -264,10 +256,9 @@
         {
           "name": "Open filter panel",
           "status": "pass",
-          "duration": 3769,
+          "duration": 5653,
           "findings": [
-            "⚠ Filter button not found",
-            "Not visible"
+            "Filter panel opened (@e2)"
           ],
           "errors": [],
           "userSteps": [
@@ -278,10 +269,9 @@
         {
           "name": "Assignee filter",
           "status": "pass",
-          "duration": 166,
+          "duration": 2756,
           "findings": [
-            "⚠ Assignee filter not found",
-            "Not in view"
+            "Assignee filter opened (@e134)"
           ],
           "errors": [],
           "userSteps": [
@@ -292,7 +282,7 @@
         {
           "name": "Tags filter",
           "status": "pass",
-          "duration": 170,
+          "duration": 177,
           "findings": [
             "⚠ Tags filter not found",
             "Not in view"
@@ -306,7 +296,7 @@
         {
           "name": "Date range filter",
           "status": "pass",
-          "duration": 174,
+          "duration": 177,
           "findings": [
             "⚠ Date range filter not found",
             "Not in view"
@@ -319,12 +309,12 @@
         },
         {
           "name": "Open first conversation",
-          "status": "fail",
-          "duration": 4816,
-          "findings": [],
-          "errors": [
-            "Could not find any conversation to open"
+          "status": "pass",
+          "duration": 8334,
+          "findings": [
+            "URL: https://theo.chatdaddy.tech/inbox/"
           ],
+          "errors": [],
           "userSteps": [
             "See conversation list → Click any chat row → Conversation opens on the right"
           ],
@@ -333,10 +323,10 @@
         {
           "name": "Assign button opens agent picker",
           "status": "pass",
-          "duration": 4346,
+          "duration": 6931,
           "findings": [
-            "⚠ Assign button not found",
-            "Not visible"
+            "Elements after: 141",
+            "Assign dropdown opened (@e100)"
           ],
           "errors": [],
           "userSteps": [
@@ -347,10 +337,9 @@
         {
           "name": "More (⋯) menu shows actions",
           "status": "pass",
-          "duration": 4428,
+          "duration": 7029,
           "findings": [
-            "⚠ \"More\" button not found",
-            "Not visible"
+            "Menu items: mark, archive"
           ],
           "errors": [],
           "userSteps": [
@@ -361,10 +350,9 @@
         {
           "name": "Bulk select toggle",
           "status": "pass",
-          "duration": 4253,
+          "duration": 6988,
           "findings": [
-            "⚠ Bulk select not found",
-            "Not visible"
+            "Bulk select mode activated"
           ],
           "errors": [],
           "userSteps": [
@@ -375,9 +363,9 @@
         {
           "name": "Message thread renders inside conversation",
           "status": "pass",
-          "duration": 5276,
+          "duration": 8394,
           "findings": [
-            "Elements in view: 12",
+            "Elements in view: 141",
             "Compose area found: false",
             "⚠ Compose area not detected — check if conversation opened"
           ],
@@ -390,7 +378,7 @@
         {
           "name": "Contact name / header visible",
           "status": "pass",
-          "duration": 398,
+          "duration": 388,
           "findings": [
             "Resolve button: not found",
             "⚠ Resolve button not visible in header"
@@ -404,7 +392,7 @@
         {
           "name": "Message timestamps visible",
           "status": "pass",
-          "duration": 188,
+          "duration": 201,
           "findings": [
             "Timestamps detected: false",
             "⚠ No timestamps found in message view"
@@ -418,7 +406,7 @@
         {
           "name": "Compose box is focusable",
           "status": "pass",
-          "duration": 204,
+          "duration": 187,
           "findings": [
             "⚠ Compose box not found",
             "Not visible"
@@ -432,7 +420,7 @@
         {
           "name": "Type text in compose",
           "status": "pass",
-          "duration": 185,
+          "duration": 197,
           "findings": [
             "⚠ Compose box not found",
             "Not visible"
@@ -446,7 +434,7 @@
         {
           "name": "Send button visible and clickable",
           "status": "pass",
-          "duration": 189,
+          "duration": 190,
           "findings": [
             "⚠ Send button not found",
             "Not visible"
@@ -460,7 +448,7 @@
         {
           "name": "Rich text toolbar (bold / italic / underline)",
           "status": "pass",
-          "duration": 177,
+          "duration": 190,
           "findings": [
             "⚠ Rich text toolbar not found",
             "Not visible"
@@ -474,7 +462,7 @@
         {
           "name": "Emoji picker opens",
           "status": "pass",
-          "duration": 170,
+          "duration": 198,
           "findings": [
             "⚠ Emoji picker button not found",
             "Not visible"
@@ -488,7 +476,7 @@
         {
           "name": "Attachment button (image / file upload)",
           "status": "pass",
-          "duration": 187,
+          "duration": 206,
           "findings": [
             "⚠ Attach button not found",
             "Not visible"
@@ -502,7 +490,7 @@
         {
           "name": "Template / quick reply picker",
           "status": "pass",
-          "duration": 172,
+          "duration": 189,
           "findings": [
             "⚠ Template picker not found",
             "Not visible"
@@ -516,10 +504,9 @@
         {
           "name": "AI reply suggestion button",
           "status": "pass",
-          "duration": 175,
+          "duration": 3256,
           "findings": [
-            "⚠ AI reply button not found",
-            "Not visible"
+            "AI reply panel opened (@e123)"
           ],
           "errors": [],
           "userSteps": [
@@ -530,7 +517,7 @@
         {
           "name": "Private / internal note toggle",
           "status": "pass",
-          "duration": 183,
+          "duration": 217,
           "findings": [
             "⚠ Internal note button not found",
             "Not visible"
@@ -544,7 +531,7 @@
         {
           "name": "Scheduled send button",
           "status": "pass",
-          "duration": 179,
+          "duration": 218,
           "findings": [
             "⚠ Scheduled send button not found",
             "Not visible"
@@ -558,10 +545,9 @@
         {
           "name": "Channel selector (multi-channel)",
           "status": "pass",
-          "duration": 186,
+          "duration": 2554,
           "findings": [
-            "⚠ Channel selector not found",
-            "Not visible"
+            "Channel selector opened (@e27)"
           ],
           "errors": [],
           "userSteps": [
@@ -572,7 +558,7 @@
         {
           "name": "Hover over message reveals action bar",
           "status": "pass",
-          "duration": 191,
+          "duration": 173,
           "findings": [
             "⚠ Message action bar not detected (may need hover)",
             "Not visible without hover"
@@ -600,7 +586,7 @@
         {
           "name": "Quote reply (reply to specific message)",
           "status": "pass",
-          "duration": 185,
+          "duration": 175,
           "findings": [
             "⚠ Quote reply not found",
             "Not visible"
@@ -614,7 +600,7 @@
         {
           "name": "Copy message text",
           "status": "pass",
-          "duration": 185,
+          "duration": 178,
           "findings": [
             "⚠ Copy button not found",
             "Not visible"
@@ -628,10 +614,9 @@
         {
           "name": "Delete / unsend message",
           "status": "pass",
-          "duration": 173,
+          "duration": 175,
           "findings": [
-            "⚠ Delete message not found",
-            "Not visible"
+            "Delete ref found: @e11 — not clicking to preserve data"
           ],
           "errors": [],
           "userSteps": [
@@ -642,7 +627,7 @@
         {
           "name": "Resolve conversation button",
           "status": "pass",
-          "duration": 186,
+          "duration": 172,
           "findings": [
             "⚠ Resolve button not found",
             "Not visible"
@@ -656,7 +641,7 @@
         {
           "name": "Assign to team member (from inside conversation)",
           "status": "pass",
-          "duration": 192,
+          "duration": 173,
           "findings": [
             "⚠ Assign button not found inside conversation",
             "Not visible"
@@ -670,7 +655,7 @@
         {
           "name": "Snooze conversation",
           "status": "pass",
-          "duration": 182,
+          "duration": 173,
           "findings": [
             "⚠ Snooze button not found",
             "Not visible"
@@ -684,7 +669,7 @@
         {
           "name": "Pin conversation",
           "status": "pass",
-          "duration": 177,
+          "duration": 193,
           "findings": [
             "⚠ Pin button not found",
             "Not visible"
@@ -698,7 +683,7 @@
         {
           "name": "Mute conversation",
           "status": "pass",
-          "duration": 196,
+          "duration": 171,
           "findings": [
             "⚠ Mute button not found",
             "Not visible"
@@ -712,7 +697,7 @@
         {
           "name": "Archive conversation",
           "status": "pass",
-          "duration": 190,
+          "duration": 178,
           "findings": [
             "⚠ Archive button not found",
             "Not visible"
@@ -726,7 +711,7 @@
         {
           "name": "Mark as unread",
           "status": "pass",
-          "duration": 193,
+          "duration": 175,
           "findings": [
             "⚠ Mark as unread not found",
             "Not visible"
@@ -740,7 +725,7 @@
         {
           "name": "Delete conversation",
           "status": "pass",
-          "duration": 178,
+          "duration": 177,
           "findings": [
             "⚠ Delete conversation not found",
             "Not visible"
@@ -754,7 +739,7 @@
         {
           "name": "Add label / tag to conversation",
           "status": "pass",
-          "duration": 190,
+          "duration": 177,
           "findings": [
             "⚠ Label/tag button not found",
             "Not visible"
@@ -768,7 +753,7 @@
         {
           "name": "Contact panel visible or togglable",
           "status": "pass",
-          "duration": 173,
+          "duration": 175,
           "findings": [
             "⚠ Contact panel toggle not found",
             "May be auto-visible"
@@ -782,7 +767,7 @@
         {
           "name": "Contact name and phone visible in panel",
           "status": "pass",
-          "duration": 209,
+          "duration": 185,
           "findings": [
             "Phone visible: false",
             "Contact label visible: true"
@@ -796,7 +781,7 @@
         {
           "name": "Edit contact details",
           "status": "pass",
-          "duration": 192,
+          "duration": 181,
           "findings": [
             "⚠ Edit contact button not found",
             "Not visible"
@@ -810,7 +795,7 @@
         {
           "name": "Add custom attribute / field",
           "status": "pass",
-          "duration": 183,
+          "duration": 172,
           "findings": [
             "⚠ Custom attribute not found",
             "Not visible"
@@ -824,7 +809,7 @@
         {
           "name": "Add / edit tags on contact",
           "status": "pass",
-          "duration": 178,
+          "duration": 174,
           "findings": [
             "⚠ Contact tags field not found",
             "Not visible"
@@ -838,7 +823,7 @@
         {
           "name": "View conversation history list",
           "status": "pass",
-          "duration": 185,
+          "duration": 177,
           "findings": [
             "⚠ Conversation history not found",
             "Not visible"
@@ -866,10 +851,10 @@
         {
           "name": "Sidebar collapse / expand",
           "status": "pass",
-          "duration": 4255,
+          "duration": 7267,
           "findings": [
-            "⚠ Sidebar toggle not found",
-            "Not visible"
+            "Collapsed — no crash",
+            "Re-expanded"
           ],
           "errors": [],
           "userSteps": [
@@ -880,10 +865,9 @@
         {
           "name": "Notifications bell",
           "status": "pass",
-          "duration": 3712,
+          "duration": 6361,
           "findings": [
-            "⚠ Notifications bell not found",
-            "Not visible"
+            "Notifications panel opened (@e47)"
           ],
           "errors": [],
           "userSteps": [
@@ -894,7 +878,7 @@
         {
           "name": "Inbox settings navigation",
           "status": "pass",
-          "duration": 195,
+          "duration": 200,
           "findings": [
             "⚠ Settings button not found",
             "Not visible"
@@ -908,10 +892,9 @@
         {
           "name": "Getting started panel",
           "status": "pass",
-          "duration": 4306,
+          "duration": 6819,
           "findings": [
-            "⚠ Getting started not found",
-            "Not visible"
+            "Getting started opened (@e114)"
           ],
           "errors": [],
           "userSteps": [
@@ -922,10 +905,9 @@
         {
           "name": "Analytics link from inbox",
           "status": "pass",
-          "duration": 4354,
+          "duration": 12506,
           "findings": [
-            "⚠ Analytics link not found",
-            "Not visible"
+            "URL: https://theo.chatdaddy.tech/analytics"
           ],
           "errors": [],
           "userSteps": [
@@ -936,9 +918,9 @@
         {
           "name": "Inbox initial load time",
           "status": "pass",
-          "duration": 1133,
+          "duration": 1270,
           "findings": [
-            "Time to interactive: ~1133ms",
+            "Time to interactive: ~1269ms",
             "GOOD (< 3s) ✓"
           ],
           "errors": [],
@@ -950,7 +932,7 @@
         {
           "name": "Rapid filter tab switching — no crash",
           "status": "pass",
-          "duration": 4748,
+          "duration": 27946,
           "findings": [
             "5 filter tabs switched rapidly — stable"
           ],
@@ -963,9 +945,9 @@
         {
           "name": "Repeated search queries — no crash",
           "status": "pass",
-          "duration": 3891,
+          "duration": 18548,
           "findings": [
-            "⚠ Search not found"
+            "4 search queries typed rapidly — stable"
           ],
           "errors": [],
           "userSteps": [
@@ -976,7 +958,7 @@
         {
           "name": "Back navigation from conversation",
           "status": "pass",
-          "duration": 7488,
+          "duration": 10822,
           "findings": [
             "URL after back: chrome-error://chromewebdata/"
           ],
