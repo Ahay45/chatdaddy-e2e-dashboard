@@ -1,8 +1,8 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-05-05T02:05:16.179Z",
+  "runAt": "2026-05-05T04:05:14.796Z",
   "mode": "headless",
-  "durationMs": 346496,
+  "durationMs": 58461,
   "summary": {
     "passed": 11,
     "failed": 1,
@@ -13,7 +13,7 @@
     {
       "name": "Page Load & Session Check",
       "icon": "🌐",
-      "durationMs": 304604,
+      "durationMs": 14781,
       "summary": {
         "passed": 2,
         "failed": 0,
@@ -24,7 +24,7 @@
         {
           "name": "Open site and detect session",
           "status": "pass",
-          "duration": 304419,
+          "duration": 14465,
           "findings": [
             "URL: https://theo.chatdaddy.tech/auth/login/",
             "Elements: 12",
@@ -36,7 +36,7 @@
         {
           "name": "No crash on load",
           "status": "pass",
-          "duration": 185,
+          "duration": 316,
           "findings": [
             "No error boundary / chunk errors"
           ],
@@ -48,7 +48,7 @@
     {
       "name": "Login Flow",
       "icon": "🔐",
-      "durationMs": 14343,
+      "durationMs": 14367,
       "summary": {
         "passed": 2,
         "failed": 1,
@@ -59,7 +59,7 @@
         {
           "name": "Detect login form fields",
           "status": "pass",
-          "duration": 424,
+          "duration": 510,
           "findings": [
             "Phone input:   @e10",
             "Password:      @e11",
@@ -74,7 +74,7 @@
         {
           "name": "Empty submit — validation check",
           "status": "pass",
-          "duration": 2778,
+          "duration": 2849,
           "findings": [
             "⚠ No validation message detected"
           ],
@@ -84,7 +84,7 @@
         {
           "name": "Login with phone + password",
           "status": "fail",
-          "duration": 11141,
+          "duration": 11008,
           "findings": [
             "Filling phone (@e10): +6285228454057",
             "Filling password (@e11)",
@@ -184,7 +184,7 @@
     {
       "name": "Error Resilience",
       "icon": "🚨",
-      "durationMs": 21529,
+      "durationMs": 23016,
       "summary": {
         "passed": 4,
         "failed": 0,
@@ -195,7 +195,7 @@
         {
           "name": "Invalid route — 404 not Oops",
           "status": "pass",
-          "duration": 4350,
+          "duration": 4611,
           "findings": [
             "Landed: https://theo.chatdaddy.tech/xyzabc-does-not-exist-999/",
             "404 page rendered correctly"
@@ -206,7 +206,7 @@
         {
           "name": "Deep nested invalid route — no crash",
           "status": "pass",
-          "duration": 4438,
+          "duration": 4545,
           "findings": [
             "URL: https://theo.chatdaddy.tech/auth/login"
           ],
@@ -216,7 +216,7 @@
         {
           "name": "Rapid route switching — stable",
           "status": "pass",
-          "duration": 8649,
+          "duration": 9552,
           "findings": [
             "5 rapid switches: no crash"
           ],
@@ -226,7 +226,7 @@
         {
           "name": "No chunk loading errors",
           "status": "pass",
-          "duration": 4092,
+          "duration": 4308,
           "findings": [
             "No chunk loading errors on reload"
           ],
@@ -238,7 +238,7 @@
     {
       "name": "UI & Accessibility",
       "icon": "♿",
-      "durationMs": 4902,
+      "durationMs": 5093,
       "summary": {
         "passed": 2,
         "failed": 0,
@@ -249,7 +249,7 @@
         {
           "name": "Login page element audit",
           "status": "pass",
-          "duration": 3829,
+          "duration": 3991,
           "findings": [
             "Total elements: 12",
             "Buttons (5): Show password | Continue with Google | Sign In | Sign up free | Forgot password?",
@@ -262,7 +262,7 @@
         {
           "name": "Show/hide password toggle",
           "status": "pass",
-          "duration": 1073,
+          "duration": 1102,
           "findings": [
             "Clicked \"Show password\" toggle (@e12)"
           ],
@@ -284,7 +284,7 @@
     {
       "name": "Performance",
       "icon": "⚡",
-      "durationMs": 1118,
+      "durationMs": 1204,
       "summary": {
         "passed": 1,
         "failed": 0,
@@ -295,9 +295,9 @@
         {
           "name": "Load time — Login page",
           "status": "pass",
-          "duration": 1118,
+          "duration": 1204,
           "findings": [
-            "Time to interactive: ~1117ms",
+            "Time to interactive: ~1204ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
