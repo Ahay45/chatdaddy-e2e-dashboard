@@ -1,8 +1,8 @@
 {
   "url": "https://theo.chatdaddy.tech",
-  "runAt": "2026-06-10T12:40:05.292Z",
+  "runAt": "2026-06-10T13:40:33.982Z",
   "mode": "headless",
-  "durationMs": 34638,
+  "durationMs": 28197,
   "summary": {
     "passed": 9,
     "failed": 3,
@@ -13,7 +13,7 @@
     {
       "name": "Page Load & Session Check",
       "icon": "🌐",
-      "durationMs": 5988,
+      "durationMs": 501,
       "summary": {
         "passed": 1,
         "failed": 1,
@@ -24,7 +24,7 @@
         {
           "name": "Open site and detect session",
           "status": "fail",
-          "duration": 5640,
+          "duration": 255,
           "findings": [],
           "errors": [
             "Could not open browser: ✗ Navigation failed: net::ERR_INTERNET_DISCONNECTED"
@@ -34,7 +34,7 @@
         {
           "name": "No crash on load",
           "status": "pass",
-          "duration": 348,
+          "duration": 246,
           "findings": [
             "No error boundary / chunk errors"
           ],
@@ -46,7 +46,7 @@
     {
       "name": "Login Flow",
       "icon": "🔐",
-      "durationMs": 6824,
+      "durationMs": 6570,
       "summary": {
         "passed": 1,
         "failed": 2,
@@ -57,7 +57,7 @@
         {
           "name": "Detect login form fields",
           "status": "fail",
-          "duration": 454,
+          "duration": 424,
           "findings": [
             "Phone input:   ✗ not found",
             "Password:      ✗ not found",
@@ -72,7 +72,7 @@
         {
           "name": "Empty submit — validation check",
           "status": "pass",
-          "duration": 2778,
+          "duration": 2697,
           "findings": [
             "Validation message shown on empty submit"
           ],
@@ -82,7 +82,7 @@
         {
           "name": "Login with phone + password",
           "status": "fail",
-          "duration": 3592,
+          "duration": 3449,
           "findings": [],
           "errors": [
             "Phone field not found. Refs: e1, e2"
@@ -177,7 +177,7 @@
     {
       "name": "Error Resilience",
       "icon": "🚨",
-      "durationMs": 17212,
+      "durationMs": 16573,
       "summary": {
         "passed": 4,
         "failed": 0,
@@ -188,7 +188,7 @@
         {
           "name": "Invalid route — 404 not Oops",
           "status": "pass",
-          "duration": 3994,
+          "duration": 3734,
           "findings": [
             "Landed: chrome-error://chromewebdata/",
             "⚠ No 404 indicator — may redirect elsewhere"
@@ -199,7 +199,7 @@
         {
           "name": "Deep nested invalid route — no crash",
           "status": "pass",
-          "duration": 3820,
+          "duration": 3754,
           "findings": [
             "URL: chrome-error://chromewebdata/"
           ],
@@ -209,7 +209,7 @@
         {
           "name": "Rapid route switching — stable",
           "status": "pass",
-          "duration": 5301,
+          "duration": 5083,
           "findings": [
             "5 rapid switches: no crash"
           ],
@@ -219,7 +219,7 @@
         {
           "name": "No chunk loading errors",
           "status": "pass",
-          "duration": 4097,
+          "duration": 4002,
           "findings": [
             "No chunk loading errors on reload"
           ],
@@ -231,7 +231,7 @@
     {
       "name": "UI & Accessibility",
       "icon": "♿",
-      "durationMs": 3756,
+      "durationMs": 3757,
       "summary": {
         "passed": 2,
         "failed": 0,
@@ -255,7 +255,7 @@
         {
           "name": "Show/hide password toggle",
           "status": "pass",
-          "duration": 251,
+          "duration": 252,
           "findings": [
             "⚠ \"Show password\" button not found on page"
           ],
@@ -277,7 +277,7 @@
     {
       "name": "Performance",
       "icon": "⚡",
-      "durationMs": 858,
+      "durationMs": 796,
       "summary": {
         "passed": 1,
         "failed": 0,
@@ -288,9 +288,9 @@
         {
           "name": "Load time — Login page",
           "status": "pass",
-          "duration": 858,
+          "duration": 796,
           "findings": [
-            "Time to interactive: ~858ms",
+            "Time to interactive: ~796ms",
             "Rating: GOOD (< 3s) ✓"
           ],
           "errors": [],
